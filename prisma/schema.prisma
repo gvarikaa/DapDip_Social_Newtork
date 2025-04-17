@@ -22,15 +22,14 @@ model User {
   updatedAt   DateTime @updatedAt
 
   // RELATIONS
-  posts      Post[]
-  likes      Like[]
-  saves      SavedPosts[]
-  followers  Follow[]     @relation("UserFollowers")
-  followings Follow[]     @relation("UserFollowings")
+  posts Post[]
 
-  // ჩატის ურთიერთობები
-  messages      Message[]
-  conversations ConversationParticipant[]
+  likes Like[]
+
+  saves SavedPosts[]
+
+  followers  Follow[] @relation("UserFollowers")
+  followings Follow[] @relation("UserFollowings")
 }
 
 model Post {
@@ -56,6 +55,7 @@ model Post {
   comments     Post[] @relation("PostComments")
 
   likes Like[]
+
   saves SavedPosts[]
 }
 
@@ -93,59 +93,4 @@ model Follow {
 
   follower  User @relation("UserFollowers", fields: [followerId], references: [id])
   following User @relation("UserFollowings", fields: [followingId], references: [id])
-}
-
-// ჩატის ახალი მოდელები
-
-model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // ურთიერთობები
-  messages     Message[]
-  participants ConversationParticipant[]
-
-  // მეტა ინფორმაცია
-  isGroup      Boolean @default(false)
-  name         String? // ჯგუფური ჩატებისთვის
-  groupAdminId String? // ჯგუფის ადმინის ID (თუ არის ჯგუფური ჩატი)
-}
-
-model ConversationParticipant {
-  // მთავარი ურთიერთობები
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  conversationId String
-
-  // მეტა ინფორმაცია
-  joinedAt   DateTime  @default(now())
-  lastReadAt DateTime?
-
-  // კომპოზიტური პირველადი გასაღები (composite primary key)
-  @@id([userId, conversationId])
-}
-
-model Message {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // ურთიერთობები
-  senderId       String
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  // დამატებითი მეტადატა
-  isRead   Boolean   @default(false)
-  readAt   DateTime?
-  isEdited Boolean   @default(false)
-
-  // დამატებითი ფუნქციები
-  attachmentUrl  String? // ფაილის URL, თუ არის მიმაგრებული
-  attachmentType String? // ფაილის ტიპი, მაგ. 'image', 'document', 'audio', და ა.შ.
-  replyToId      Int? // მესიჯის ID, რომელსაც პასუხობს ეს მესიჯი (თუ არის პასუხი)
 }

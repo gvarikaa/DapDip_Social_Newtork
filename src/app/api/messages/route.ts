@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { imagekit } from "@/utils";
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
@@ -13,11 +14,78 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { content, conversationId, receiverId } = await request.json();
+    // მივიღოთ მონაცემები FormData ან JSON ფორმატში
+    const contentType = request.headers.get("content-type") || "";
+    let content = "";
+    let conversationId = "";
+    let receiverId = "";
+    let attachmentUrl = null;
+    let attachmentType = null;
+    
+    if (contentType.includes("multipart/form-data")) {
+      // FormData მოთხოვნა ფაილებით
+      const formData = await request.formData();
+      content = formData.get("content") as string || "";
+      conversationId = formData.get("conversationId") as string || "";
+      receiverId = formData.get("receiverId") as string || "";
+      
+      // ფაილის დამუშავება, თუ არის
+      const file = formData.get("file") as File;
+      
+      if (file && file.size > 0) {
+        // აქ შეგიძლიათ გამოიყენოთ ImageKit ან სხვა სერვისი ფაილების შესანახად
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        // ფაილის ტიპის განსაზღვრა
+        if (file.type.includes("image")) {
+          attachmentType = "image";
+        } else if (file.type.includes("pdf")) {
+          attachmentType = "pdf";
+        } else if (file.type.includes("doc")) {
+          attachmentType = "doc";
+        } else {
+          attachmentType = "file";
+        }
+        
+        // ფაილის ატვირთვა ImageKit-ზე
+        const uploadResult = await new Promise((resolve, reject) => {
+          imagekit.upload(
+            {
+              file: buffer,
+              fileName: file.name,
+              folder: "/messages",
+            },
+            function (error, result) {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+        });
+        
+        // მივიღოთ ფაილის URL
+        if (uploadResult && typeof uploadResult === 'object' && 'url' in uploadResult) {
+          attachmentUrl = uploadResult.url as string;
+        }
+      }
+    } else {
+      // სტანდარტული JSON მოთხოვნა
+      const body = await request.json();
+      content = body.content || "";
+      conversationId = body.conversationId || "";
+      receiverId = body.receiverId || "";
+    }
 
-    if (!content || (!conversationId && !receiverId)) {
+    if (!content && !attachmentUrl) {
       return NextResponse.json(
-        { error: "შეიყვანე მესიჯის შინაარსი და მიმღები ან სასაუბრო ID" },
+        { error: "შეიყვანეთ მესიჯის შინაარსი ან ატვირთეთ ფაილი" },
+        { status: 400 }
+      );
+    }
+
+    if (!conversationId && !receiverId) {
+      return NextResponse.json(
+        { error: "მიუთითეთ საუბრის ID ან მიმღების ID" },
         { status: 400 }
       );
     }
@@ -28,6 +96,7 @@ export async function POST(request: NextRequest) {
     if (!actualConversationId && receiverId) {
       const existingConversation = await prisma.conversation.findFirst({
         where: {
+          isGroup: false,
           participants: {
             some: { userId }, // ერთ-ერთი მონაწილე უნდა იყოს userId
           },
@@ -62,10 +131,21 @@ export async function POST(request: NextRequest) {
         content,
         senderId: userId,
         conversationId: actualConversationId,
+        attachmentUrl,
+        attachmentType
       },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            img: true
+          }
+        }
+      }
     });
 
-    // OPTIONAL: conversation update for latest message time
+    // საუბრის განახლება ბოლო მესიჯის დროით
     await prisma.conversation.update({
       where: { id: actualConversationId },
       data: { updatedAt: new Date() },
@@ -102,13 +182,50 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // შევამოწმოთ არის თუ არა მომხმარებელი ამ საუბრის მონაწილე
+    const isParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        userId,
+        conversationId
+      }
+    });
+
+    if (!isParticipant) {
+      return NextResponse.json(
+        { error: "არაავტორიზებული წვდომა" },
+        { status: 403 }
+      );
+    }
+
     const messages = await prisma.message.findMany({
       where: {
         conversationId,
       },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            img: true
+          }
+        }
+      },
       orderBy: {
         createdAt: "asc",
       },
+    });
+
+    // განვაახლოთ მიღებული მესიჯების სტატუსი
+    await prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: userId },
+        isRead: false
+      },
+      data: {
+        isRead: true,
+        readAt: new Date()
+      }
     });
 
     return NextResponse.json(messages);

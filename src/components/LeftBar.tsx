@@ -9,61 +9,56 @@ const menuList = [
   {
     id: 1,
     name: "Homepage",
-    link: "/",
+    link: "/",   // ეს უკვე სწორია
     icon: "home.svg",
   },
   {
     id: 2,
     name: "Explore",
-    link: "/",
+    link: "/explore",  // შეცვალეთ
     icon: "explore.svg",
   },
-  // {
-  //   id: 3,
-  //   name: "Notification",
-  //   link: "/",
-  //   icon: "notification.svg",
-  // },
+  // ...
   {
     id: 4,
     name: "Messages",
-    link: "/messages",
+    link: "/messages",  // შეცვალეთ
     icon: "message.svg",
   },
   {
     id: 5,
     name: "Bookmarks",
-    link: "/",
+    link: "/bookmarks",  // შეცვალეთ
     icon: "bookmark.svg",
   },
   {
     id: 6,
     name: "Jobs",
-    link: "/",
+    link: "/jobs",  // შეცვალეთ
     icon: "job.svg",
   },
   {
     id: 7,
     name: "Communities",
-    link: "/",
+    link: "/communities",  // შეცვალეთ
     icon: "community.svg",
   },
   {
     id: 8,
     name: "Premium",
-    link: "/",
+    link: "/premium",  // შეცვალეთ
     icon: "logo.svg",
   },
   {
     id: 9,
     name: "Profile",
-    link: "/",
+    link: "/profile",  // შეცვალეთ
     icon: "profile.svg",
   },
   {
     id: 10,
     name: "More",
-    link: "/",
+    link: "/more",  // შეცვალეთ
     icon: "more.svg",
   },
 ];
