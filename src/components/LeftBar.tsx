@@ -27,7 +27,7 @@ const menuList = [
   {
     id: 4,
     name: "Messages",
-    link: "/",
+    link: "/messages",
     icon: "message.svg",
   },
   {
