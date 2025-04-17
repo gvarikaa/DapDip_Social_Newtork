@@ -2,6 +2,7 @@
   "name": "xui",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "node server.js",
     "build": "next build",
@@ -11,35 +12,37 @@
   "dependencies": {
     "@clerk/elements": "^0.22.9",
     "@clerk/nextjs": "^6.9.12",
-    "@prisma/client": "^6.2.1",
-    "@tanstack/react-query": "^5.64.2",
+    "@imagekit/next": "^2.0.0",
+    "@prisma/client": "^6.6.0",
+    "@tanstack/react-query": "^5.74.3",
     "imagekit": "^6.0.0",
     "imagekitio-next": "^1.0.1",
-    "next": "15.1.0",
-    "prisma": "^6.2.1",
+    "next": "^15.3.0",
+    "prisma": "^6.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-infinite-scroll-component": "^6.1.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "svix": "^1.45.1",
+    "svix": "^1.64.1",
     "timeago.js": "^4.0.2",
     "ts-node": "^10.9.2",
     "uuid": "^11.0.5",
-    "zod": "^3.24.1"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@eslint/eslintrc": "^3.3.1",
+    "@types/node": "^20.17.30",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "eslint": "^9.24.0",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   }
 }
