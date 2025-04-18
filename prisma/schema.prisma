@@ -1,3 +1,4 @@
+// prisma/schema.prisma (დამატებული AIComment მოდელი)
 generator client {
   provider = "prisma-client-js"
 }
@@ -30,6 +31,15 @@ model User {
 
   followers  Follow[] @relation("UserFollowers")
   followings Follow[] @relation("UserFollowings")
+
+  // მესიჯები და საუბრების მონაწილეები
+  messages                 Message[]
+  conversationParticipants ConversationParticipant[]
+
+  // AI კომენტარის მოთხოვნები
+  aiCommentRequests AIComment[]
+
+  discussionSummaries DiscussionSummary[]
 }
 
 model Post {
@@ -57,6 +67,11 @@ model Post {
   likes Like[]
 
   saves SavedPosts[]
+
+  // AI კომენტარები ამ პოსტზე
+  aiComments AIComment[]
+
+  discussionSummaries DiscussionSummary[]
 }
 
 model Like {
@@ -93,4 +108,79 @@ model Follow {
 
   follower  User @relation("UserFollowers", fields: [followerId], references: [id])
   following User @relation("UserFollowings", fields: [followingId], references: [id])
+}
+
+model Conversation {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  isGroup      Boolean  @default(false)
+  name         String?
+  groupAdminId String?
+
+  // რელაციები
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  userId         String
+  conversationId String
+  joinedAt       DateTime  @default(now())
+  lastReadAt     DateTime?
+
+  // რელაციები
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, conversationId])
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  content        String    @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  senderId       String
+  conversationId String
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  isEdited       Boolean   @default(false)
+  attachmentUrl  String?
+  attachmentType String?
+  replyToId      Int?
+
+  // რელაციები
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+// AI კომენტარების მოდელი
+model AIComment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // რელაციები
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  // მომხმარებელი, რომელმაც მოითხოვა AI-ის კომენტარი
+  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  requestedById String
+}
+
+// AI კომენტარების შეჯამებების მოდელი
+model DiscussionSummary {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // რელაციები
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  // მომხმარებელი, რომელმაც მოითხოვა შეჯამება
+  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  requestedById String
 }

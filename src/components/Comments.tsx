@@ -1,3 +1,4 @@
+// src/components/Comments.tsx
 "use client";
 
 import { useUser } from "@clerk/nextjs";
@@ -7,6 +8,8 @@ import { Post as PostType } from "@prisma/client";
 import { useActionState, useEffect } from "react";
 import { addComment } from "@/action";
 import { socket } from "@/socket";
+import AICommentButton from "./AICommentButton";
+import DiscussionSummary from "./DiscussionSummary"; // დაამატეთ იმპორტი
 
 type CommentWithDetails = PostType & {
   user: { displayName: string | null; username: string; img: string | null };
@@ -47,6 +50,9 @@ const Comments = ({
 
   return (
     <div className="">
+      {/* დავამატოთ დისკუსიის შეჯამების კომპონენტი */}
+      <DiscussionSummary comments={comments} postId={postId} />
+      
       {user && (
         <form
           action={formAction}
@@ -55,7 +61,7 @@ const Comments = ({
           <div className="relative w-10 h-10 rounded-full overflow-hidden -z-10">
             <Image
               src={user?.imageUrl}
-              alt="Lama Dev"
+              alt="User"
               w={100}
               h={100}
               tr={true}
@@ -87,8 +93,14 @@ const Comments = ({
         <span className="text-red-300 p-4">Something went wrong!</span>
       )}
       {comments.map((comment) => (
-        <div key={comment.id}>
+        <div key={comment.id} className="border-b border-borderGray">
           <Post post={comment} type="comment" />
+          {/* AI კომენტარის ღილაკი */}
+          {user && (
+            <div className="ml-14 mb-3">
+              <AICommentButton postId={comment.id} commentContent={comment.desc || ""} />
+            </div>
+          )}
         </div>
       ))}
     </div>
