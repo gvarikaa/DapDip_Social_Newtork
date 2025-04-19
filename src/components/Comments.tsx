@@ -1,4 +1,3 @@
-// src/components/Comments.tsx
 "use client";
 
 import { useUser } from "@clerk/nextjs";
@@ -9,10 +8,15 @@ import { useActionState, useEffect } from "react";
 import { addComment } from "@/action";
 import { socket } from "@/socket";
 import AICommentButton from "./AICommentButton";
-import DiscussionSummary from "./DiscussionSummary"; // დაამატეთ იმპორტი
+import DiscussionSummary from "./DiscussionSummary";
 
 type CommentWithDetails = PostType & {
-  user: { displayName: string | null; username: string; img: string | null };
+  user: { 
+    displayName: string | null; 
+    username: string; 
+    img: string | null;
+    gender?: string;
+  };
   _count: { likes: number; rePosts: number; comments: number };
   likes: { id: number }[];
   rePosts: { id: number }[];
@@ -65,6 +69,8 @@ const Comments = ({
               w={100}
               h={100}
               tr={true}
+              isAvatar={true}
+              gender="unspecified" // Clerk არ ინახავს გენდერს, ამიტომ საწყის მნიშვნელობას ვიყენებთ
             />
           </div>
           <input type="number" name="postId" hidden readOnly value={postId} />

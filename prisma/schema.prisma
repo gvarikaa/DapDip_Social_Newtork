@@ -19,6 +19,7 @@ model User {
   website     String?
   img         String?
   cover       String?
+  gender      String?  @default("unspecified") // შესაძლო მნიშვნელობები: "male", "female", "unspecified"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

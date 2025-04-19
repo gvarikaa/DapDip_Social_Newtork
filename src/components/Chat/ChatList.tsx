@@ -1,4 +1,3 @@
-// src/components/Chat/ChatList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,6 +15,7 @@ type ConversationParticipant = {
     username: string;
     displayName: string | null;
     img: string | null;
+    gender?: string;
   };
 };
 
@@ -107,12 +107,18 @@ const ChatList = () => {
         p => p.userId !== user?.id
       );
       
-      if (otherParticipant && otherParticipant.user && otherParticipant.user.img) {
-        return otherParticipant.user.img;
+      if (otherParticipant && otherParticipant.user) {
+        return {
+          img: otherParticipant.user.img,
+          gender: otherParticipant.user.gender
+        };
       }
     }
     
-    return "general/noAvatar.png";
+    return {
+      img: null,
+      gender: "unspecified"
+    };
   };
 
   if (loading) {
@@ -144,38 +150,44 @@ const ChatList = () => {
       
       {conversations
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        .map((conversation) => (
-        <div
-          key={conversation.id}
-          className="flex items-center gap-3 p-4 border-b border-borderGray hover:bg-[#181818] cursor-pointer"
-          onClick={() => openChat(conversation.id)}
-        >
-          <div className="relative w-12 h-12 rounded-full overflow-hidden">
-            <Image
-              path={getConversationImage(conversation)}
-              alt="Avatar"
-              w={48}
-              h={48}
-              tr={true}
-            />
-          </div>
-          <div className="flex-1">
-            <div className="flex justify-between">
-              <h3 className="font-bold">
-                {getConversationName(conversation)}
-              </h3>
-              <span className="text-textGray text-sm">
-                {format(conversation.updatedAt)}
-              </span>
+        .map((conversation) => {
+        const conversationImageInfo = getConversationImage(conversation);
+        
+        return (
+          <div
+            key={conversation.id}
+            className="flex items-center gap-3 p-4 border-b border-borderGray hover:bg-[#181818] cursor-pointer"
+            onClick={() => openChat(conversation.id)}
+          >
+            <div className="relative w-12 h-12 rounded-full overflow-hidden">
+              <Image
+                path={conversationImageInfo.img}
+                alt="Avatar"
+                w={48}
+                h={48}
+                tr={true}
+                isAvatar={true}
+                gender={conversationImageInfo.gender}
+              />
             </div>
-            {conversation.messages[0] && (
-              <p className="text-textGray truncate">
-                {conversation.messages[0].content}
-              </p>
-            )}
+            <div className="flex-1">
+              <div className="flex justify-between">
+                <h3 className="font-bold">
+                  {getConversationName(conversation)}
+                </h3>
+                <span className="text-textGray text-sm">
+                  {format(conversation.updatedAt)}
+                </span>
+              </div>
+              {conversation.messages[0] && (
+                <p className="text-textGray truncate">
+                  {conversation.messages[0].content}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

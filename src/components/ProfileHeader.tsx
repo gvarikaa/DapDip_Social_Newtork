@@ -1,31 +1,17 @@
-import Feed from "@/components/Feed";
-import FollowButton from "@/components/FollowButton";
-import Image from "@/components/Image";
-import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+// src/components/ProfileHeader.tsx - შეგიძლიათ შექმნათ ეს ფაილი
+"use client";
+
+import Image from "./Image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import FollowButton from "./FollowButton";
+import { UserType } from "@/types";
 
-const UserPage = async ({
-  params,
-}: {
-  params: Promise<{ username: string }>;
-}) => {
-  const { userId } = await auth();
+interface ProfileHeaderProps {
+  user: UserType;
+  isCurrentUser: boolean;
+}
 
-  const username = (await params).username;
-
-  const user = await prisma.user.findUnique({
-    where: { username: username },
-    include: {
-      _count: { select: { followers: true, followings: true } },
-      followings: userId ? { where: { followerId: userId } } : undefined,
-    },
-  });
-
-  console.log(userId);
-  if (!user) return notFound();
-
+const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
   return (
     <div className="">
       {/* PROFILE TITLE */}
@@ -33,8 +19,9 @@ const UserPage = async ({
         <Link href="/">
           <Image path="icons/back.svg" alt="back" w={24} h={24} />
         </Link>
-        <h1 className="font-bold text-lg">{user.displayName}</h1>
+        <h1 className="font-bold text-lg">{user.displayName || user.username}</h1>
       </div>
+      
       {/* INFO */}
       <div className="">
         {/* COVER & AVATAR CONTAINER */}
@@ -50,6 +37,7 @@ const UserPage = async ({
               isCover={true}
             />
           </div>
+          
           {/* AVATAR */}
           <div className="w-1/5 aspect-square rounded-full overflow-hidden border-4 border-black bg-gray-300 absolute left-4 -translate-y-1/2">
             <Image
@@ -64,7 +52,7 @@ const UserPage = async ({
           </div>
           
           {/* EDIT PROFILE BUTTON (მხოლოდ მომხმარებლის საკუთარ პროფილზე) */}
-          {userId === user.id && (
+          {isCurrentUser && (
             <div className="absolute right-4 top-4 z-10">
               <Link 
                 href="/settings/profile" 
@@ -90,6 +78,7 @@ const UserPage = async ({
             </div>
           )}
         </div>
+        
         <div className="flex w-full items-center justify-end gap-2 p-2">
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
             <Image path="icons/more.svg" alt="more" w={20} h={20} />
@@ -100,22 +89,24 @@ const UserPage = async ({
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
             <Image path="icons/message.svg" alt="more" w={20} h={20} />
           </div>
-          {userId && (
+          {!isCurrentUser && (
             <FollowButton
-            userId={user.id}
-            isFollowed={!!user.followings.length}
-            username={username}
+              userId={user.id}
+              isFollowed={!!user.isFollowed}
+              username={user.username}
             />
           )}
         </div>
+        
         {/* USER DETAILS */}
         <div className="p-4 flex flex-col gap-2">
           {/* USERNAME & HANDLE */}
           <div className="">
-            <h1 className="text-2xl font-bold">{user.displayName}</h1>
+            <h1 className="text-2xl font-bold">{user.displayName || user.username}</h1>
             <span className="text-textGray text-sm">@{user.username}</span>
           </div>
           {user.bio && <p>{user.bio}</p>}
+          
           {/* JOB & LOCATION & DATE */}
           <div className="flex gap-4 text-textGray text-[15px]">
             {user.location && (
@@ -140,6 +131,7 @@ const UserPage = async ({
               </span>
             </div>
           </div>
+          
           {/* FOLLOWINGS & FOLLOWERS */}
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
@@ -153,10 +145,8 @@ const UserPage = async ({
           </div>
         </div>
       </div>
-      {/* FEED */}
-      <Feed userProfileId={user.id} />
     </div>
   );
 };
 
-export default UserPage;
+export default ProfileHeader;

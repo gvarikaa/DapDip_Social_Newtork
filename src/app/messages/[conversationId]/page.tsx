@@ -1,11 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import ChatBox from "@/components/Chat/ChatBox";
-import Link from "next/link";
-import Image from "@/components/Image";
+import FriendsList from "@/components/Chat/FriendsList";
 import { prisma } from "@/prisma";
 import ConversationParticipants from "@/components/Chat/ConversationParticipants";
 import ChatHeader from "@/components/Chat/ChatHeader";
+import UserProfileSidebar from "@/components/Chat/UserProfileSidebar";
 
 export default async function ConversationPage({
   params,
@@ -51,12 +51,11 @@ export default async function ConversationPage({
     redirect('/messages');
   }
   
-  // მივიღოთ საუბრის სახელი:
-  // - ჯგუფებისთვის გამოვიყენოთ კონვერსაციის სახელი
-  // - პირადი საუბრებისთვის გამოვიყენოთ მეორე მონაწილის სახელი
+  // მივიღოთ საუბრის სახელი და მეორე მონაწილის მონაცემები
   let chatName = conversation.name;
   let chatImage = null;
   let otherParticipant = null;
+  let otherParticipantId = null;
   
   if (!conversation.isGroup) {
     // პირადი საუბრისთვის ვიპოვოთ მეორე მონაწილე
@@ -67,29 +66,48 @@ export default async function ConversationPage({
     if (otherParticipant && otherParticipant.user) {
       chatName = otherParticipant.user.displayName || otherParticipant.user.username;
       chatImage = otherParticipant.user.img;
+      otherParticipantId = otherParticipant.userId;
     }
   }
   
   return (
-    <div className="h-screen flex flex-col">
-      <ChatHeader 
-        conversationId={params.conversationId}
-        chatName={chatName || "უცნობი საუბარი"}
-        chatImage={chatImage}
-        isGroup={conversation.isGroup}
-        receiverId={otherParticipant?.userId || ""}
-      />
-      
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-hidden">
-          <ChatBox conversationId={params.conversationId} />
-        </div>
-        <ConversationParticipants 
-          participants={conversation.participants} 
-          isGroup={conversation.isGroup}
-          name={conversation.name}
-        />
+    <div className="h-screen flex">
+      {/* მარცხენა სვეტი - მეგობრების სია */}
+      <div className="w-1/5 hidden lg:block border-r border-borderGray">
+        <FriendsList />
       </div>
+      
+      {/* შუა სვეტი - ჩატის ნაწილი */}
+      <div className="flex-1 flex flex-col h-full">
+        <ChatHeader 
+          conversationId={params.conversationId}
+          chatName={chatName || "უცნობი საუბარი"}
+          chatImage={chatImage}
+          isGroup={conversation.isGroup}
+          receiverId={otherParticipantId || ""}
+        />
+        
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            <ChatBox conversationId={params.conversationId} />
+          </div>
+          <ConversationParticipants 
+            participants={conversation.participants} 
+            isGroup={conversation.isGroup}
+            name={conversation.name}
+          />
+        </div>
+      </div>
+      
+      {/* მარჯვენა სვეტი - მომხმარებლის ინფორმაცია და გაზიარებული მედია */}
+      {!conversation.isGroup && otherParticipantId && (
+        <div className="w-1/4 hidden lg:block">
+          <UserProfileSidebar 
+            userId={otherParticipantId} 
+            conversationId={params.conversationId} 
+          />
+        </div>
+      )}
     </div>
   );
 }

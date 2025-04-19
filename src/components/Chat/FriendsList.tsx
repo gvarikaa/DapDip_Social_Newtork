@@ -12,6 +12,7 @@ type FriendType = {
   username: string;
   displayName?: string | null;
   img?: string | null;
+  gender?: string;
   isOnline?: boolean;
   lastActive?: string;
 };
@@ -134,11 +135,13 @@ const FriendsList = () => {
               <div className="relative">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
                   <Image
-                    path={friend.img || "general/noAvatar.png"}
+                    path={friend.img || null}
                     alt={friend.username}
                     w={40}
                     h={40}
                     tr={true}
+                    isAvatar={true}
+                    gender={friend.gender || "unspecified"}
                   />
                 </div>
                 <div 
