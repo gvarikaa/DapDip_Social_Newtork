@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "@/components/Image";
 import { prisma } from "@/prisma";
 import ConversationParticipants from "@/components/Chat/ConversationParticipants";
+import ChatHeader from "@/components/Chat/ChatHeader";
 
 export default async function ConversationPage({
   params,
@@ -55,10 +56,11 @@ export default async function ConversationPage({
   // - პირადი საუბრებისთვის გამოვიყენოთ მეორე მონაწილის სახელი
   let chatName = conversation.name;
   let chatImage = null;
+  let otherParticipant = null;
   
   if (!conversation.isGroup) {
     // პირადი საუბრისთვის ვიპოვოთ მეორე მონაწილე
-    const otherParticipant = conversation.participants.find(
+    otherParticipant = conversation.participants.find(
       p => p.userId !== userId
     );
     
@@ -70,21 +72,14 @@ export default async function ConversationPage({
   
   return (
     <div className="h-screen flex flex-col">
-      <div className="p-4 border-b border-borderGray flex items-center gap-4">
-        <Link href="/messages">
-          <Image path="icons/back.svg" alt="back" w={24} h={24} />
-        </Link>
-        <div className="relative w-10 h-10 rounded-full overflow-hidden">
-          <Image
-            path={chatImage || "general/noAvatar.png"}
-            alt="Chat"
-            w={40}
-            h={40}
-            tr={true}
-          />
-        </div>
-        <h1 className="text-xl font-bold">{chatName}</h1>
-      </div>
+      <ChatHeader 
+        conversationId={params.conversationId}
+        chatName={chatName || "უცნობი საუბარი"}
+        chatImage={chatImage}
+        isGroup={conversation.isGroup}
+        receiverId={otherParticipant?.userId || ""}
+      />
+      
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-hidden">
           <ChatBox conversationId={params.conversationId} />

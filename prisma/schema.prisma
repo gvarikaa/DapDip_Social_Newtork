@@ -40,6 +40,8 @@ model User {
   aiCommentRequests AIComment[]
 
   discussionSummaries DiscussionSummary[]
+
+  postAnalyses PostAnalysis[]
 }
 
 model Post {
@@ -72,6 +74,8 @@ model Post {
   aiComments AIComment[]
 
   discussionSummaries DiscussionSummary[]
+
+  analyses PostAnalysis[]
 }
 
 model Like {
@@ -181,6 +185,21 @@ model DiscussionSummary {
   postId Int
 
   // მომხმარებელი, რომელმაც მოითხოვა შეჯამება
+  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  requestedById String
+}
+
+// პოსტის ანალიზის მოდელი
+model PostAnalysis {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // რელაციები
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  // მომხმარებელი, რომელმაც მოითხოვა ანალიზი
   requestedBy   User   @relation(fields: [requestedById], references: [id])
   requestedById String
 }

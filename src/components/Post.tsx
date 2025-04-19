@@ -6,6 +6,7 @@ import Video from "./Video";
 import Link from "next/link";
 import { Post as PostType } from "@prisma/client";
 import { format } from "timeago.js";
+import FactCheckButton from "./FactCheckButton";
 
 type UserSummary = {
   displayName: string | null;
@@ -145,6 +146,17 @@ const Post = ({
           {type === "status" && (
             <span className="text-textGray">8:41 PM · Dec 5, 2024</span>
           )}
+          
+          {/* დაამატეთ ფაქტების შემოწმების ღილაკი */}
+          {originalPost.desc && originalPost.desc.length >= 15 && (
+            <div className="mb-2">
+              <FactCheckButton 
+                postId={originalPost.id} 
+                postContent={originalPost.desc} 
+              />
+            </div>
+          )}
+          
           <PostInteractions
             username={originalPost.user.username}
             postId={originalPost.id}
