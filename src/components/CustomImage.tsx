@@ -15,7 +15,6 @@ type CustomImageProps = {
   isCover?: boolean;
 };
 
-// ეს ფუნქცია ამოწმებს არის თუ არა სურათის ბმული სრულად მოცემული
 const isFullUrl = (url: string | undefined | null): boolean => {
   if (!url) return false;
   return url.startsWith('http://') || url.startsWith('https://');
@@ -34,49 +33,45 @@ const CustomImage = ({
   isCover,
 }: CustomImageProps) => {
   let imageUrl: string;
-  
+
   if (src) {
-    // თუ src პირდაპირ არის მოცემული, გამოვიყენოთ ის
     imageUrl = src;
   } else if (isAvatar) {
-    // ავატარის სურათი
     if (!path) {
-      // თუ path არ არის მითითებული, გამოვიყენოთ UI Avatars
       imageUrl = createUiAvatarUrl(alt, gender);
     } else if (isFullUrl(path)) {
       imageUrl = path;
     } else {
-      // ლოკალური ფაილის შემთხვევაში
       imageUrl = createUiAvatarUrl(alt, gender);
     }
   } else if (isCover) {
-    // ქავერის სურათი
     if (!path) {
-      imageUrl = "https://source.unsplash.com/random/1200x400/?nature"; // დროებითი ფონური სურათი Unsplash-დან
+      imageUrl = "https://source.unsplash.com/random/1200x400/?nature";
     } else if (isFullUrl(path)) {
       imageUrl = path;
     } else {
-      imageUrl = "https://source.unsplash.com/random/1200x400/?nature"; // დროებითი ფონური სურათი
+      imageUrl = "https://source.unsplash.com/random/1200x400/?nature";
     }
   } else if (path) {
-    // იკონები და სხვა სურათები
     if (path.startsWith('icons/')) {
-      // იკონები Feather Icons API-დან
       const iconName = path.replace('icons/', '').replace('.svg', '');
       imageUrl = `https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/icons/${iconName}.svg`;
     } else if (path.startsWith('general/')) {
-      // ზოგადი სურათები - დროებით placeholder
-      imageUrl = "https://via.placeholder.com/150";
+      // ვარაუდით, რომ ზოგადი სურათები ან ლოკალურია public/images/general/ საქაღალდეში,
+      // ან ImageKit-ზეა general/ საქაღალდეში.
+      if (process.env.NEXT_PUBLIC_IMAGEKIT_URL) {
+        imageUrl = `${process.env.NEXT_PUBLIC_IMAGEKIT_URL}/${path}`;
+      } else {
+        imageUrl = `/images/${path}`; // ლოკალური გზა public-დან
+      }
     } else {
-      // სხვა სურათები
+      // სხვა სურათებისთვის - საჭიროა თქვენი ლოგიკა
       imageUrl = "https://via.placeholder.com/150";
     }
   } else {
-    // საწყისი სურათი
     imageUrl = "https://via.placeholder.com/150";
   }
-  
-  // იმიჯ ტეგი ჩვეულებრივი HTML-ით
+
   return (
     <img
       src={imageUrl}

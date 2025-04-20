@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "setup-images": "node scripts/setup-images.js",
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
@@ -16,6 +17,7 @@
     "@prisma/client": "^6.6.0",
     "@tanstack/react-query": "^5.74.3",
     "emoji-picker-react": "^4.12.2",
+    "feather-icons": "^4.29.2",
     "imagekit": "^6.0.0",
     "imagekitio-next": "^1.0.1",
     "next": "^15.3.0",

@@ -7,6 +7,9 @@
  * @returns სრული URL UI Avatars-დან
  */
 export function createUiAvatarUrl(name: string, gender?: string | null): string {
+  // თუ სახელი არ არის მოცემული, გამოვიყენოთ "User"
+  const displayName = name || 'User';
+  
   // განვსაზღვროთ საწყისი ფერები სქესის მიხედვით
   let backgroundColor = '1D9BF0'; // ლურჯი - IconBlue - სქესის არჩევის გარეშე
   let color = 'FFFFFF'; // თეთრი
@@ -17,9 +20,6 @@ export function createUiAvatarUrl(name: string, gender?: string | null): string 
     backgroundColor = 'e84393'; // ვარდისფერი
   }
   
-  // შევქმნათ სახელისგან ინიციალები (მაქსიმუმ ორი სიმბოლო)
-  const displayName = name || 'User';
-  
   // პარამეტრები:
   // name - სახელი რომლის ინიციალებიც გამოჩნდება
   // background - ფონის ფერი HEX ფორმატში
@@ -27,7 +27,9 @@ export function createUiAvatarUrl(name: string, gender?: string | null): string 
   // size - სურათის ზომა პიქსელებში
   // rounded - მრგვალი ფორმის ავატარი თუ true
   // bold - გასქელებული ტექსტი
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=${backgroundColor}&color=${color}&size=128&rounded=true&bold=true`;
+  const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=${backgroundColor}&color=${color}&size=128&rounded=true&bold=true`;
+  
+  return url;
 }
 
 /**
@@ -38,8 +40,20 @@ export function createUiAvatarUrl(name: string, gender?: string | null): string 
  * @returns ავატარის სრული URL
  */
 export function getAvatarUrl(userImg: string | null | undefined, gender: string | null | undefined, name?: string): string {
+  // თუ მომხმარებელს აქვს სურათი, გამოვიყენოთ ის
   if (userImg) {
-    return userImg;
+    // შევამოწმოთ არის თუ არა სრული URL
+    if (userImg.startsWith('http://') || userImg.startsWith('https://')) {
+      return userImg;
+    }
+    
+    // თუ ეს ImageKit-ის path-ია, დავაბრუნოთ საწყისი ფორმით
+    if (userImg.startsWith('/')) {
+      return userImg;
+    }
+    
+    // თუ ეს ლოკალური ფაილია
+    return `/images/avatars/${userImg}`;
   }
   
   // თუ მომხმარებელს არ აქვს სურათი, გამოვიყენოთ UI Avatars
@@ -52,8 +66,20 @@ export function getAvatarUrl(userImg: string | null | undefined, gender: string 
  * @returns ქავერის სრული URL
  */
 export function getCoverUrl(userCover: string | null | undefined): string {
+  // თუ მომხმარებელს აქვს ქავერი
   if (userCover) {
-    return userCover;
+    // შევამოწმოთ არის თუ არა სრული URL
+    if (userCover.startsWith('http://') || userCover.startsWith('https://')) {
+      return userCover;
+    }
+    
+    // თუ ეს ImageKit-ის path-ია, დავაბრუნოთ საწყისი ფორმით
+    if (userCover.startsWith('/')) {
+      return userCover;
+    }
+    
+    // თუ ეს ლოკალური ფაილია
+    return `/images/covers/${userCover}`;
   }
   
   // საწყისი ქავერი

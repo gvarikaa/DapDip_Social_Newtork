@@ -1,4 +1,3 @@
-import { imagekit } from "@/utils";
 import CustomImage from "./CustomImage";
 import PostInfo from "./PostInfo";
 import PostInteractions from "./PostInteractions";
@@ -11,8 +10,8 @@ import FactCheckButton from "./FactCheckButton";
 type UserSummary = {
   displayName: string | null;
   username: string;
-  img: string | null | undefined;  // დავამატოთ undefined ტიპი
-  gender?: string | null | undefined; // დავამატოთ null და undefined ტიპები
+  img: string | null | undefined;
+  gender?: string | null | undefined;
 };
 
 type Engagement = {
@@ -75,13 +74,13 @@ const Post = ({
         <div
           className={`${
             type === "status" && "hidden"
-          } relative w-10 h-10 rounded-full overflow-hidden -z-10`}
+          } relative w-10 h-10 rounded-full overflow-hidden`}
         >
           <CustomImage
-            src={originalPost.user.img || undefined}
-            alt="User avatar"
-            w={100}
-            h={100}
+            src={originalPost.user.img}
+            alt={originalPost.user.username}
+            w={40}
+            h={40}
             tr={true}
             isAvatar={true}
             gender={originalPost.user.gender}
@@ -102,10 +101,10 @@ const Post = ({
                 } relative w-10 h-10 rounded-full overflow-hidden`}
               >
                 <CustomImage
-                  src={originalPost.user.img || undefined}
-                  alt="User avatar"
-                  w={100}
-                  h={100}
+                  src={originalPost.user.img}
+                  alt={originalPost.user.username}
+                  w={40}
+                  h={40}
                   tr={true}
                   isAvatar={true}
                   gender={originalPost.user.gender}
@@ -126,7 +125,7 @@ const Post = ({
                 </span>
                 {type !== "status" && (
                   <span className="text-textGray">
-                    {format(originalPost.createdAt)}
+                    {format(originalPost.createdAt.toString())}
                   </span>
                 )}
               </div>
@@ -147,8 +146,8 @@ const Post = ({
           {originalPost.img && (
             <div className="overflow-hidden rounded-lg">
               <CustomImage
-                src={originalPost.img || undefined}
-                alt=""
+                src={originalPost.img}
+                alt="Post image"
                 w={600}
                 h={originalPost.imgHeight || 600}
                 className={originalPost.isSensitive ? "blur-3xl" : ""}
@@ -169,7 +168,7 @@ const Post = ({
           {/* დრო სტატუსის ტიპის პოსტებისთვის */}
           {type === "status" && (
             <span className="text-textGray">
-              {format(originalPost.createdAt)}
+              {format(originalPost.createdAt.toString())}
             </span>
           )}
           
