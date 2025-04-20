@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "./Image";
+import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import { prisma } from "@/prisma";
 import { auth } from "@clerk/nextjs/server";
 
@@ -31,8 +31,8 @@ const Recommendations = async () => {
           {/* IMAGE AND USER INFO */}
           <div className="flex items-center gap-2">
             <div className="relative rounded-full overflow-hidden w-10 h-10">
-              <Image
-                path={person.img || "general/noAvatar.png"}
+              <CustomImage
+                src={person.img || "general/default.png"}
                 alt={person.username}
                 w={100}
                 h={100}

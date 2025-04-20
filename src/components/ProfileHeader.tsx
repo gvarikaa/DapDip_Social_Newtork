@@ -1,13 +1,28 @@
-// src/components/ProfileHeader.tsx - შეგიძლიათ შექმნათ ეს ფაილი
+// src/components/ProfileHeader.tsx
 "use client";
 
-import Image from "./Image";
+import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import Link from "next/link";
 import FollowButton from "./FollowButton";
 import { UserType } from "@/types";
 
 interface ProfileHeaderProps {
-  user: UserType;
+  user: Partial<UserType> & {
+    id: string;
+    username: string;
+    displayName?: string | null;
+    img?: string | null | undefined;  // დავამატოთ undefined ტიპი
+    cover?: string | null | undefined; // დავამატოთ undefined ტიპი
+    bio?: string | null;
+    location?: string | null;
+    createdAt: Date | string;
+    gender?: string | null | undefined; // დავამატოთ undefined ტიპი
+    _count: {
+      followers: number;
+      followings: number;
+    };
+    isFollowed?: boolean;
+  };
   isCurrentUser: boolean;
 }
 
@@ -17,7 +32,7 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
       {/* PROFILE TITLE */}
       <div className="flex items-center gap-8 sticky top-0 backdrop-blur-md p-4 z-10 bg-[#00000084]">
         <Link href="/">
-          <Image path="icons/back.svg" alt="back" w={24} h={24} />
+          <CustomImage src="icons/back.svg" alt="back" w={24} h={24} />
         </Link>
         <h1 className="font-bold text-lg">{user.displayName || user.username}</h1>
       </div>
@@ -28,9 +43,9 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
         <div className="relative w-full">
           {/* COVER */}
           <div className="w-full aspect-[3/1] relative">
-            <Image
-              path={user.cover}
-              alt="Cover"
+            <CustomImage
+  src={user.cover || undefined}  // დავამატოთ undefined თუ null-ია
+  alt="Cover"
               w={600}
               h={200}
               tr={true}
@@ -40,9 +55,9 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
           
           {/* AVATAR */}
           <div className="w-1/5 aspect-square rounded-full overflow-hidden border-4 border-black bg-gray-300 absolute left-4 -translate-y-1/2">
-            <Image
-              path={user.img}
-              alt="Avatar"
+            <CustomImage
+  src={user.img || undefined}  // დავამატოთ undefined თუ null-ია
+  alt="Avatar"
               w={100}
               h={100}
               tr={true}
@@ -81,13 +96,13 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
         
         <div className="flex w-full items-center justify-end gap-2 p-2">
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/more.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/more.svg" alt="more" w={20} h={20} />
           </div>
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/explore.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/explore.svg" alt="more" w={20} h={20} />
           </div>
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/message.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/message.svg" alt="more" w={20} h={20} />
           </div>
           {!isCurrentUser && (
             <FollowButton
@@ -111,8 +126,8 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
           <div className="flex gap-4 text-textGray text-[15px]">
             {user.location && (
               <div className="flex items-center gap-2">
-                <Image
-                  path="icons/userLocation.svg"
+                <CustomImage
+                  src="icons/userLocation.svg"
                   alt="location"
                   w={20}
                   h={20}
@@ -121,7 +136,7 @@ const ProfileHeader = ({ user, isCurrentUser }: ProfileHeaderProps) => {
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Image path="icons/date.svg" alt="date" w={20} h={20} />
+              <CustomImage src="icons/date.svg" alt="date" w={20} h={20} />
               <span>
                 შემოგვიერთდა{" "}
                 {new Date(user.createdAt.toString()).toLocaleDateString(

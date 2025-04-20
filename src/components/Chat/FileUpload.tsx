@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import Image from '../Image';
+import Image from '../CustomImage';
 
 type FileUploadProps = {
   onFileSelect: (file: File) => void;

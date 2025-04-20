@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import Image from "./Image";
+import Image from "./CustomImage";
 import Post from "./Post";
 import { Post as PostType } from "@prisma/client";
 import { useActionState, useEffect } from "react";
@@ -64,14 +64,15 @@ const Comments = ({
         >
           <div className="relative w-10 h-10 rounded-full overflow-hidden -z-10">
             <Image
-              src={user?.imageUrl}
-              alt="User"
-              w={100}
-              h={100}
-              tr={true}
-              isAvatar={true}
-              gender="unspecified" // Clerk არ ინახავს გენდერს, ამიტომ საწყის მნიშვნელობას ვიყენებთ
-            />
+  path={comment.user.img}
+  alt={`${comment.user.username}'s avatar`}
+  w={40}
+  h={40}
+  tr={true}
+  isAvatar={true}
+  gender={comment.user.gender}
+  className="rounded-full"
+/>
           </div>
           <input type="number" name="postId" hidden readOnly value={postId} />
           <input

@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "timeago.js";
-import Image from "./Image";
+import Image from "./CustomImage";
 import { useEffect, useState } from "react";
 
 type AICommentDisplayProps = {

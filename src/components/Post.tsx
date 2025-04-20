@@ -1,5 +1,5 @@
 import { imagekit } from "@/utils";
-import Image from "./Image";
+import CustomImage from "./CustomImage";
 import PostInfo from "./PostInfo";
 import PostInteractions from "./PostInteractions";
 import Video from "./Video";
@@ -11,8 +11,8 @@ import FactCheckButton from "./FactCheckButton";
 type UserSummary = {
   displayName: string | null;
   username: string;
-  img: string | null;
-  gender?: string;
+  img: string | null | undefined;  // დავამატოთ undefined ტიპი
+  gender?: string | null | undefined; // დავამატოთ null და undefined ტიპები
 };
 
 type Engagement = {
@@ -35,7 +35,19 @@ const Post = ({
   type?: "status" | "comment";
   post: PostWithDetails;
 }) => {
+  // შევამოწმოთ არის თუ არა post და user ობიექტები დეფინირებული
+  if (!post || !post.user) {
+    console.error("Post or user is undefined:", post);
+    return null;
+  }
+
   const originalPost = post.rePost || post;
+
+  // დავრწმუნდეთ, რომ originalPost.user არსებობს
+  if (!originalPost.user) {
+    console.error("Original post user is undefined:", originalPost);
+    return null;
+  }
 
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
@@ -53,21 +65,21 @@ const Post = ({
               d="M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
             />
           </svg>
-          <span>{post.user.displayName} reposted</span>
+          <span>{post.user.displayName || post.user.username} reposted</span>
         </div>
       )}
+
       {/* POST CONTENT */}
       <div className={`flex gap-4 ${type === "status" && "flex-col"}`}>
         {/* AVATAR */}
-
         <div
           className={`${
             type === "status" && "hidden"
           } relative w-10 h-10 rounded-full overflow-hidden -z-10`}
         >
-          <Image
-            path={originalPost.user.img}
-            alt=""
+          <CustomImage
+            src={originalPost.user.img || undefined}
+            alt="User avatar"
             w={100}
             h={100}
             tr={true}
@@ -89,9 +101,9 @@ const Post = ({
                   type !== "status" && "hidden"
                 } relative w-10 h-10 rounded-full overflow-hidden`}
               >
-                <Image
-                  path={originalPost.user.img}
-                  alt=""
+                <CustomImage
+                  src={originalPost.user.img || undefined}
+                  alt="User avatar"
                   w={100}
                   h={100}
                   tr={true}
@@ -105,7 +117,7 @@ const Post = ({
                 }`}
               >
                 <h1 className="text-md font-bold">
-                  {originalPost.user.displayName}
+                  {originalPost.user.displayName || originalPost.user.username}
                 </h1>
                 <span
                   className={`text-textGray ${type === "status" && "text-sm"}`}
@@ -121,6 +133,7 @@ const Post = ({
             </Link>
             <PostInfo />
           </div>
+
           {/* TEXT & MEDIA */}
           <Link
             href={`/${originalPost.user.username}/status/${originalPost.id}`}
@@ -129,10 +142,12 @@ const Post = ({
               {originalPost.desc}
             </p>
           </Link>
+
+          {/* სურათის ჩვენება */}
           {originalPost.img && (
-            <div className="overflow-hidden">
-              <Image
-                path={originalPost.img}
+            <div className="overflow-hidden rounded-lg">
+              <CustomImage
+                src={originalPost.img || undefined}
                 alt=""
                 w={600}
                 h={originalPost.imgHeight || 600}
@@ -140,6 +155,8 @@ const Post = ({
               />
             </div>
           )}
+
+          {/* ვიდეოს ჩვენება */}
           {originalPost.video && (
             <div className="rounded-lg overflow-hidden">
               <Video
@@ -148,11 +165,15 @@ const Post = ({
               />
             </div>
           )}
+
+          {/* დრო სტატუსის ტიპის პოსტებისთვის */}
           {type === "status" && (
-            <span className="text-textGray">8:41 PM · Dec 5, 2024</span>
+            <span className="text-textGray">
+              {format(originalPost.createdAt)}
+            </span>
           )}
           
-          {/* დაამატეთ ფაქტების შემოწმების ღილაკი */}
+          {/* ფაქტების შემოწმების ღილაკი */}
           {originalPost.desc && originalPost.desc.length >= 15 && (
             <div className="mb-2">
               <FactCheckButton 
@@ -162,6 +183,7 @@ const Post = ({
             </div>
           )}
           
+          {/* ინტერაქციის ღილაკები */}
           <PostInteractions
             username={originalPost.user.username}
             postId={originalPost.id}

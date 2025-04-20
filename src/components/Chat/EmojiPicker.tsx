@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import Image from '../Image';
+import Image from '../CustomImage';
 
 // დინამიურად ვტვირთავთ EmojiPicker კომპონენტს, რადგან ის მხოლოდ კლიენტის მხარეს მუშაობს
 const Picker = dynamic(() => import('emoji-picker-react').then(mod => mod.default), {

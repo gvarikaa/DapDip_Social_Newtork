@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { socket } from "@/socket";
-import Image from "../Image";
+import Image from "../CustomImage";
 import { format } from "timeago.js";
 import EmojiPicker from "./EmojiPicker";
 import FileUpload from "./FileUpload";

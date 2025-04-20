@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useActionState, useEffect, useRef, useState } from "react";
-import Image from "./Image";
+import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import NextImage from "next/image";
 import ImageEditor from "./ImageEditor";
 import { useUser } from "@clerk/nextjs";
@@ -47,12 +47,11 @@ const Share = () => {
     <form
       ref={formRef}
       className="p-4 flex gap-4"
-      // action={(formData) => shareAction(formData, settings)}
       action={formAction}
     >
       {/* AVATAR */}
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
-        <Image src={user?.imageUrl} alt="" w={100} h={100} tr={true} />
+        <CustomImage src={user?.imageUrl} alt="" w={100} h={100} tr={true} />
       </div>
       {/* OTHERS */}
       <div className="flex-1 flex flex-col gap-4">
@@ -136,44 +135,44 @@ const Share = () => {
               accept="image/*,video/*"
             />
             <label htmlFor="file">
-              <Image
-                path="icons/image.svg"
+              <CustomImage
+                src="icons/image.svg"
                 alt=""
                 w={20}
                 h={20}
                 className="cursor-pointer"
               />
             </label>
-            <Image
-              path="icons/gif.svg"
+            <CustomImage
+              src="icons/gif.svg"
               alt=""
               w={20}
               h={20}
               className="cursor-pointer"
             />
-            <Image
-              path="icons/poll.svg"
+            <CustomImage
+              src="icons/poll.svg"
               alt=""
               w={20}
               h={20}
               className="cursor-pointer"
             />
-            <Image
-              path="icons/emoji.svg"
+            <CustomImage
+              src="icons/emoji.svg"
               alt=""
               w={20}
               h={20}
               className="cursor-pointer"
             />
-            <Image
-              path="icons/schedule.svg"
+            <CustomImage
+              src="icons/schedule.svg"
               alt=""
               w={20}
               h={20}
               className="cursor-pointer"
             />
-            <Image
-              path="icons/location.svg"
+            <CustomImage
+              src="icons/location.svg"
               alt=""
               w={20}
               h={20}

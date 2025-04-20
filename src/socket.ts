@@ -1,8 +1,12 @@
 "use client";
 import { io } from "socket.io-client";
 
-// გამოვიყენებთ იმავე ჰოსტს და პორტს, რაზეც Next.js სერვერი მუშაობს
-export const socket = io("http://localhost:3000", {
+// დინამიურად განვსაზღვროთ სოკეტის URL
+const socketUrl = typeof window !== "undefined" 
+  ? window.location.origin 
+  : "http://localhost:3000";
+
+export const socket = io(socketUrl, {
   reconnectionDelayMax: 10000,
   autoConnect: true
 });

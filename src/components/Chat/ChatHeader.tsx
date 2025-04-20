@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "../Image";
+import Image from "../CustomImage";
 import VideoCallControls from "./VideoCallControls";
 import CallInterface from "./CallInterface";
 

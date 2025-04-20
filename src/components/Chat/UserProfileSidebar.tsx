@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "../Image";
+import Image from "../CustomImage";
 import Link from "next/link";
 
 type SharedMedia = {

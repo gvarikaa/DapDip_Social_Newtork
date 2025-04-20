@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "../Image";
+import Image from "../CustomImage";
 import { format } from "timeago.js";
 import { socket } from "@/socket";
 import Link from "next/link";

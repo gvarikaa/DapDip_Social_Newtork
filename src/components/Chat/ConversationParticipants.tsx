@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "@/components/Image";
+import Image from "@/components/CustomImage";
 
 type Participant = {
   userId: string;

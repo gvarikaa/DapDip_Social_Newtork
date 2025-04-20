@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Image from "../Image";
+import Image from "../CustomImage";
 import { socket } from "@/socket";
 import { useUser } from "@clerk/nextjs";
 

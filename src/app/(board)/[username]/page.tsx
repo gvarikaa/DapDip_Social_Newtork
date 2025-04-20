@@ -1,6 +1,6 @@
 import Feed from "@/components/Feed";
 import FollowButton from "@/components/FollowButton";
-import Image from "@/components/Image";
+import CustomImage from "@/components/CustomImage"; // ეს შევცვალეთ
 import { prisma } from "@/prisma";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
@@ -12,7 +12,6 @@ const UserPage = async ({
   params: Promise<{ username: string }>;
 }) => {
   const { userId } = await auth();
-
   const username = (await params).username;
 
   const user = await prisma.user.findUnique({
@@ -23,26 +22,28 @@ const UserPage = async ({
     },
   });
 
-  console.log(userId);
   if (!user) return notFound();
 
+  // შევამოწმოთ არის თუ არა ეს მიმდინარე მომხმარებლის პროფილი
+  const isCurrentUser = userId === user.id;
+
   return (
-    <div className="">
+    <div>
       {/* PROFILE TITLE */}
       <div className="flex items-center gap-8 sticky top-0 backdrop-blur-md p-4 z-10 bg-[#00000084]">
         <Link href="/">
-          <Image path="icons/back.svg" alt="back" w={24} h={24} />
+          <CustomImage src="icons/back.svg" alt="back" w={24} h={24} />
         </Link>
-        <h1 className="font-bold text-lg">{user.displayName}</h1>
+        <h1 className="font-bold text-lg">{user.displayName || user.username}</h1>
       </div>
       {/* INFO */}
-      <div className="">
+      <div>
         {/* COVER & AVATAR CONTAINER */}
         <div className="relative w-full">
           {/* COVER */}
           <div className="w-full aspect-[3/1] relative">
-            <Image
-              path={user.cover}
+            <CustomImage
+              src={user.cover}
               alt="Cover"
               w={600}
               h={200}
@@ -52,8 +53,8 @@ const UserPage = async ({
           </div>
           {/* AVATAR */}
           <div className="w-1/5 aspect-square rounded-full overflow-hidden border-4 border-black bg-gray-300 absolute left-4 -translate-y-1/2">
-            <Image
-              path={user.img}
+            <CustomImage
+              src={user.img}
               alt="Avatar"
               w={100}
               h={100}
@@ -63,11 +64,11 @@ const UserPage = async ({
             />
           </div>
           
-          {/* EDIT PROFILE BUTTON (მხოლოდ მომხმარებლის საკუთარ პროფილზე) */}
-          {userId === user.id && (
+          {/* EDIT PROFILE BUTTON */}
+          {isCurrentUser && (
             <div className="absolute right-4 top-4 z-10">
-              <Link 
-                href="/settings/profile" 
+              <Link
+                href="/settings/profile"
                 className="bg-white bg-opacity-90 text-black px-4 py-1 rounded-full font-bold text-sm flex items-center"
               >
                 <svg
@@ -92,27 +93,27 @@ const UserPage = async ({
         </div>
         <div className="flex w-full items-center justify-end gap-2 p-2">
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/more.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/more.svg" alt="more" w={20} h={20} />
           </div>
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/explore.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/explore.svg" alt="explore" w={20} h={20} />
           </div>
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
-            <Image path="icons/message.svg" alt="more" w={20} h={20} />
+            <CustomImage src="icons/message.svg" alt="message" w={20} h={20} />
           </div>
-          {userId && (
+          {userId && userId !== user.id && (
             <FollowButton
-            userId={user.id}
-            isFollowed={!!user.followings.length}
-            username={username}
+              userId={user.id}
+              isFollowed={!!user.followings.length}
+              username={username}
             />
           )}
         </div>
         {/* USER DETAILS */}
         <div className="p-4 flex flex-col gap-2">
           {/* USERNAME & HANDLE */}
-          <div className="">
-            <h1 className="text-2xl font-bold">{user.displayName}</h1>
+          <div>
+            <h1 className="text-2xl font-bold">{user.displayName || user.username}</h1>
             <span className="text-textGray text-sm">@{user.username}</span>
           </div>
           {user.bio && <p>{user.bio}</p>}
@@ -120,8 +121,8 @@ const UserPage = async ({
           <div className="flex gap-4 text-textGray text-[15px]">
             {user.location && (
               <div className="flex items-center gap-2">
-                <Image
-                  path="icons/userLocation.svg"
+                <CustomImage
+                  src="icons/userLocation.svg"
                   alt="location"
                   w={20}
                   h={20}
@@ -130,7 +131,7 @@ const UserPage = async ({
               </div>
             )}
             <div className="flex items-center gap-2">
-              <Image path="icons/date.svg" alt="date" w={20} h={20} />
+              <CustomImage src="icons/date.svg" alt="date" w={20} h={20} />
               <span>
                 შემოგვიერთდა{" "}
                 {new Date(user.createdAt.toString()).toLocaleDateString(

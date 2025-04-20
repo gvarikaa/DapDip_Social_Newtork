@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "../Image";
+import Image from "../CustomImage";
 import { socket } from "@/socket";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
@@ -134,15 +134,16 @@ const FriendsList = () => {
             >
               <div className="relative">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
-                  <Image
-                    path={friend.img || null}
-                    alt={friend.username}
-                    w={40}
-                    h={40}
-                    tr={true}
-                    isAvatar={true}
-                    gender={friend.gender || "unspecified"}
-                  />
+                <Image
+  path={user.img}
+  alt={`${user.username}'s avatar`}
+  w={50}
+  h={50}
+  tr={true}
+  isAvatar={true}
+  gender={user.gender}
+  className="rounded-full"
+/>
                 </div>
                 <div 
                   className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${

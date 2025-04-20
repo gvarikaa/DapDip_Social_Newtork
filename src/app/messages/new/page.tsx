@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import NewChat from "@/components/Chat/NewChat";
 import Link from "next/link";
-import Image from "@/components/Image";
+import Image from "@/components/CustomImage";
 
 export default async function NewMessagePage() {
   const { userId } = await auth();

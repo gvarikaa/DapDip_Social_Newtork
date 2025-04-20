@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "@/components/Image";
+import Image from "@/components/CustomImage";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 

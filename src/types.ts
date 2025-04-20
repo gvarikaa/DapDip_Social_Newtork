@@ -1,5 +1,6 @@
 // src/types.ts - მთელი აპლიკაციის ტიპები ერთ ფაილში
 
+
 // მომხმარებლის ტიპი
 export interface UserType {
   id: string;
@@ -25,6 +26,7 @@ export interface UserType {
   
   // დამატებითი ინფორმაცია
   isFollowed?: boolean;
+  followings?: any[]; // დავამატეთ followings ველი მასივის სახით
   latestPost?: {
     id: number;
     content: string | null;
