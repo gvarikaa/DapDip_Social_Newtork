@@ -1,12 +1,11 @@
-// src/bunnyUtils.ts
+// src/utils/bunnyUtils.ts
+
+import { createClient } from '@/utils/supabase/client';
+import { createClient as createServerClient } from '@/utils/supabase/server';
 
 /**
  * Bunny.net Storage და CDN-თან სამუშაო უტილიტები
- * Adapted for Supabase authentication
  */
-
-import { getSupabaseServer } from '@/utils/supabase/server';
-import { getSupabaseBrowser } from '@/utils/supabase/client';
 
 // ენვ ცვლადები Bunny.net-ისთვის
 const BUNNY_API_KEY = process.env.BUNNY_API_KEY; // API გასაღები
@@ -14,39 +13,65 @@ const BUNNY_STORAGE_ZONE = "dapdip"; // თქვენი storage zone სა�
 const BUNNY_CDN_URL = "https://dapdip.b-cdn.net"; // CDN URL
 
 /**
- * Helper function to get authentication headers for Bunny.net requests
- * Can be used in both client and server contexts
+ * მიიღებს ავტორიზაციის ჰედერებს Bunny-სთვის
+ * @param isServer არის თუ არა სერვერის მხარეს
+ * @returns ავტორიზაციის ჰედერები და მომხმარებლის ID
  */
-async function getBunnyAuthHeaders(isServer = false) {
+async function getBunnyAuthHeaders(isServer: boolean = false): Promise<{ headers: HeadersInit, userId: string | null }> {
   try {
-    // Get the authentication session from Supabase
-    const supabase = isServer 
-      ? await getSupabaseServer() 
-      : getSupabaseBrowser();
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // Include user ID in headers for auditing/tracking if available
-    const headers: Record<string, string> = {
+    let userId: string | null = null;
+    const headers: HeadersInit = {
       "AccessKey": BUNNY_API_KEY || "",
       "Content-Type": "application/octet-stream",
     };
-    
-    // If we have a session, add the user ID as a custom header
-    if (session?.user) {
-      headers["X-User-ID"] = session.user.id;
+
+    // მივიღოთ მიმდინარე სესია - სერვერის ან კლიენტის მხარეს
+    if (isServer) {
+      const supabase = createServerClient();
+      const { data } = await supabase.auth.getSession();
+      userId = data.session?.user?.id || null;
+    } else {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      userId = data.session?.user?.id || null;
     }
-    
-    return headers;
+
+    // დავამატოთ მომხმარებლის ID ჰედერებში
+    if (userId) {
+      headers["X-User-ID"] = userId;
+    }
+
+    return { headers, userId };
   } catch (error) {
-    console.error("[BunnyUtil] Error getting auth headers:", error);
-    
-    // Return basic headers if authentication fails
-    return {
-      "AccessKey": BUNNY_API_KEY || "",
-      "Content-Type": "application/octet-stream",
+    console.error("[BunnyUtil] ავტორიზაციის შეცდომა:", error);
+    return { 
+      headers: { 
+        "AccessKey": BUNNY_API_KEY || "",
+        "Content-Type": "application/octet-stream"
+      }, 
+      userId: null 
     };
   }
+}
+
+/**
+ * მიიღებს მომხმარებლის პერსონალური შენახვის გზას
+ * @param userId მომხმარებლის ID
+ * @param directory დირექტორია
+ * @returns მომხმარებლის პერსონალური გზა
+ */
+function getUserStoragePath(userId: string | null, directory: string): string {
+  if (!userId) {
+    return directory;
+  }
+  
+  // თუ დირექტორია უკვე შეიცავს მომხმარებლის ID-ს, არ დავამატოთ ხელახლა
+  if (directory.includes(`users/${userId}`)) {
+    return directory;
+  }
+  
+  // მომხმარებლის ID-ს დამატება გზაში
+  return directory ? `users/${userId}/${directory}` : `users/${userId}`;
 }
 
 /**
@@ -54,15 +79,15 @@ async function getBunnyAuthHeaders(isServer = false) {
  * @param buffer ფაილის ბაიტები
  * @param fileName ფაილის სახელი
  * @param directory დირექტორია (ფოლდერი)
- * @param isServer არის თუ არა სერვერის კონტექსტში (default: false)
- * @returns დაბრუნებული URL
+ * @param isServer შესრულდება სერვერზე თუ კლიენტზე
+ * @returns დაბრუნებული URL, წარმატების სტატუსი და სტატუს კოდი
  */
 export async function uploadFileToBunny(
   buffer: Buffer,
   fileName: string,
   directory: string = "",
   isServer: boolean = false
-): Promise<{ url: string; success: boolean; statusCode: number; userId?: string }> {
+): Promise<{ url: string; success: boolean; statusCode: number; userId: string | null }> {
   try {
     console.log(`[BunnyUtil] Starting upload of file ${fileName} to directory ${directory || 'root'}`);
     
@@ -71,37 +96,35 @@ export async function uploadFileToBunny(
       return {
         url: "",
         success: false,
-        statusCode: 500
+        statusCode: 500,
+        userId: null
       };
     }
     
-    // Get authentication headers
-    const authHeaders = await getBunnyAuthHeaders(isServer);
-    let userId = authHeaders["X-User-ID"];
+    // მივიღოთ ავტორიზაციის ჰედერები
+    const { headers, userId } = await getBunnyAuthHeaders(isServer);
+    
+    // შევქმნათ მომხმარებლის პერსონალური დირექტორია
+    const userDir = getUserStoragePath(userId, directory);
     
     // საბოლოო path ფაილისთვის
-    // Include user ID in path for organization if available
-    const userPrefix = userId ? `users/${userId}/` : "";
-    const path = directory 
-      ? `${userPrefix}${directory}/${fileName}` 
-      : `${userPrefix}${fileName}`;
+    const path = userDir ? `${userDir}/${fileName}` : fileName;
     
     // API endpoint Bunny Storage-ისთვის
     const endpoint = `https://storage.bunnycdn.com/${BUNNY_STORAGE_ZONE}/${path}`;
     console.log(`[BunnyUtil] Uploading to endpoint: ${endpoint}`);
     
-    // ვაგზავნით PUT მოთხოვნას ფაილის ასატვირთად
-    console.log(`[BunnyUtil] Sending PUT request with content length: ${buffer.length} bytes`);
-    
-    // Include content length in headers
-    const headers = {
-      ...authHeaders,
+    // დავამატოთ Content-Length ჰედერი
+    const uploadHeaders = {
+      ...headers,
       "Content-Length": buffer.length.toString()
     };
     
+    // ვაგზავნით PUT მოთხოვნას ფაილის ასატვირთად
+    console.log(`[BunnyUtil] Sending PUT request with content length: ${buffer.length} bytes`);
     const response = await fetch(endpoint, {
       method: "PUT",
-      headers,
+      headers: uploadHeaders,
       body: buffer
     });
 
@@ -132,7 +155,8 @@ export async function uploadFileToBunny(
     return {
       url: "",
       success: false,
-      statusCode: 500
+      statusCode: 500,
+      userId: null
     };
   }
 }
@@ -140,45 +164,40 @@ export async function uploadFileToBunny(
 /**
  * ფაილის წაშლა Bunny.net Storage-დან
  * @param path ფაილის გზა (path)
- * @param isServer არის თუ არა სერვერის კონტექსტში (default: false)
+ * @param isServer შესრულდება სერვერზე თუ კლიენტზე
  * @returns წარმატება/წარუმატებლობა
  */
-export async function deleteFileFromBunny(
-  path: string,
-  isServer: boolean = false
-): Promise<boolean> {
+export async function deleteFileFromBunny(path: string, isServer: boolean = false): Promise<{ success: boolean; userId: string | null }> {
   try {
-    console.log(`[BunnyUtil] Attempting to delete file at path: ${path}`);
+    // მივიღოთ ავტორიზაციის ჰედერები
+    const { headers, userId } = await getBunnyAuthHeaders(isServer);
     
     // თუ URL-ია, გარდავქმნათ path-ად
     if (path.startsWith(BUNNY_CDN_URL)) {
       path = path.replace(BUNNY_CDN_URL, "").replace(/^\//, "");
     }
     
-    // Get authentication headers
-    const authHeaders = await getBunnyAuthHeaders(isServer);
-    
     // API endpoint Bunny Storage-ისთვის
     const endpoint = `https://storage.bunnycdn.com/${BUNNY_STORAGE_ZONE}/${path}`;
-    console.log(`[BunnyUtil] Delete endpoint: ${endpoint}`);
+    console.log(`[BunnyUtil] Deleting file at: ${endpoint}`);
     
     // ვაგზავნით DELETE მოთხოვნას
     const response = await fetch(endpoint, {
       method: "DELETE",
-      headers: authHeaders
+      headers
     });
+
+    console.log(`[BunnyUtil] Delete response status: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[BunnyUtil] Bunny Storage delete error (${response.status}):`, errorText);
-    } else {
-      console.log(`[BunnyUtil] Successfully deleted file at: ${path}`);
     }
 
-    return response.ok;
+    return { success: response.ok, userId };
   } catch (error) {
-    console.error("[BunnyUtil] Error deleting file:", error);
-    return false;
+    console.error("[BunnyUtil] File deletion error:", error);
+    return { success: false, userId: null };
   }
 }
 
@@ -223,30 +242,4 @@ export function getImageUrl(path: string, width: number, height: number): string
  */
 export function getVideoUrl(path: string): string {
   return getBunnyCdnUrl(path);
-}
-
-/**
- * Get user-specific storage path
- * Can be used to create user-specific directories
- * @param isServer არის თუ არა სერვერის კონტექსტში (default: false)
- * @returns User-specific path or empty string if not authenticated
- */
-export async function getUserStoragePath(isServer: boolean = false): Promise<string> {
-  try {
-    // Get the authentication session from Supabase
-    const supabase = isServer 
-      ? await getSupabaseServer() 
-      : getSupabaseBrowser();
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session?.user) {
-      return `users/${session.user.id}/`;
-    }
-    
-    return '';
-  } catch (error) {
-    console.error("[BunnyUtil] Error getting user storage path:", error);
-    return '';
-  }
 }

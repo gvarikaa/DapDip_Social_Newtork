@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useTransition } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/context";
 import { useRouter } from "next/navigation"; // დავამატეთ router იმპორტი
 import ProfileAvatar from "@/components/Avatar/ProfileAvatar";
 import {

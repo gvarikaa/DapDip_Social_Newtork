@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/lib/auth/context";
 import { 
   Users, Plus, ChevronRight, Search,
   Filter, Brain, Wrench, Newspaper,
@@ -27,7 +27,7 @@ const groupTypeNames = {
 };
 
 export default function GroupsPage() {
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -261,7 +261,7 @@ export default function GroupsPage() {
                   ? "თქვენ არ ხართ გაწევრიანებული არცერთ ჯგუფში." 
                   : "ამ კატეგორიაში ჯგუფები ვერ მოიძებნა."}
             </p>
-            {user && (
+            {(user || dbUser) && (
               <Link
                 href="/groups/create"
                 className="bg-accent hover:bg-accent-dark text-white py-2 px-6 rounded-lg transition-colors"

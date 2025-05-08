@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, Bell, MessageSquare, Home, Compass, User, Film, Users, Menu } from 'lucide-react';
 import AnimatedLogo from './AnimatedLogo';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useAuth } from '@/lib/auth/context';
 
 const Header: React.FC = () => {
   const pathname = usePathname();
-  const { user } = useSupabase();
+  const { user, dbUser } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

@@ -18,6 +18,52 @@ export function extractHashtags(text: string): string[] {
 }
 
 /**
+ * ჰეშთეგების შენახვა მონაცემთა ბაზაში
+ * @param postId პოსტის ID
+ * @param hashtags ჰეშთეგების მასივი
+ */
+import { prisma } from "@/prisma";
+
+export async function saveHashtags(postId: number, hashtags: string[]): Promise<void> {
+  try {
+    console.log(`Saving hashtags for post ${postId}:`, hashtags);
+    
+    if (!hashtags || hashtags.length === 0) return;
+    
+    // გავასუფთაოთ ჰეშთეგები
+    const validHashtags = sanitizeHashtags(hashtags);
+    
+    if (validHashtags.length === 0) return;
+    
+    // შევქმნათ ან მოვძებნოთ ჰეშთეგები და მივაბათ პოსტს
+    for (const tag of validHashtags) {
+      // მოვძებნოთ ან შევქმნათ ჰეშთეგი
+      let hashtag = await prisma.hashtag.findUnique({
+        where: { name: tag }
+      });
+      
+      if (!hashtag) {
+        hashtag = await prisma.hashtag.create({
+          data: { name: tag }
+        });
+      }
+      
+      // შევქმნათ კავშირი პოსტსა და ჰეშთეგს შორის
+      await prisma.postHashtag.create({
+        data: {
+          postId,
+          hashtagId: hashtag.id
+        }
+      });
+    }
+    
+    console.log(`Successfully saved ${validHashtags.length} hashtags for post ${postId}`);
+  } catch (error) {
+    console.error("Error saving hashtags:", error);
+  }
+}
+
+/**
  * ტექსტის შიგნით ყველა ჰეშთეგის ბმულებით ჩანაცვლება
  * @param text საწყისი ტექსტი
  * @returns ჰეშთეგების ბმულებით განახლებული ტექსტი
