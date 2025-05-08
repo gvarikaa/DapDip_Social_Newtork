@@ -11,19 +11,16 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'images.clerk.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'img.clerk.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'ui-avatars.com',
       },
       {
         protocol: 'https',
         hostname: 'cdn.jsdelivr.net',
+      },
+      // Add Supabase storage domain if needed
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
       }
     ],
   },

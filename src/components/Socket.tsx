@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { socket } from "../socket";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 export default function Socket() {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
 
-  const { user } = useUser();
+  const { dbUser } = useAuth();
 
   useEffect(() => {
     if (socket.connected) {
@@ -22,8 +22,8 @@ export default function Socket() {
       socket.io.engine.on("upgrade", (transport) => {
         setTransport(transport.name);
       });
-      if (user) {
-        socket.emit("newUser", user.username);
+      if (dbUser) {
+        socket.emit("newUser", dbUser.username);
       }
     }
 
@@ -39,7 +39,7 @@ export default function Socket() {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
-  }, [user]);
+  }, [dbUser]);
 
   return (
     <span></span>

@@ -11,10 +11,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/elements": "^0.22.9",
-    "@clerk/nextjs": "^6.9.12",
     "@imagekit/next": "^2.0.0",
     "@prisma/client": "^6.6.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.74.3",
     "emoji-picker-react": "^4.12.2",
     "feather-icons": "^4.29.2",

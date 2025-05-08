@@ -1,5 +1,5 @@
 import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { imagekit } from "@/utils";
 

@@ -3,11 +3,11 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "@/components/CustomImage";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 
 const ProfileEditPage = () => {
-  const { user } = useUser();
+  const { user, dbUser } = useAuth();
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);

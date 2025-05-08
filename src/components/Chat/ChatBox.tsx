@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import { socket } from "@/socket";
 import Image from "../CustomImage";
 import { format } from "timeago.js";
@@ -31,7 +31,7 @@ const ChatBox = ({ conversationId }: { conversationId: string }) => {
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { user } = useUser();
+  const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -210,7 +210,7 @@ const ChatBox = ({ conversationId }: { conversationId: string }) => {
     }
   };
   
-  if (loading) {
+  if (loading || !user) {
     return <div className="p-4">იტვირთება...</div>;
   }
   
@@ -264,12 +264,12 @@ const ChatBox = ({ conversationId }: { conversationId: string }) => {
             <div
               key={message.id}
               className={`flex ${
-                message.senderId === user?.id ? "justify-end" : "justify-start"
+                message.senderId === user.id ? "justify-end" : "justify-start"
               }`}
             >
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
-                  message.senderId === user?.id
+                  message.senderId === user.id
                     ? "bg-iconBlue text-white"
                     : "bg-[#2f3336] text-white"
                 }`}

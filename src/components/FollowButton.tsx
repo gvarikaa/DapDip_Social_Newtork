@@ -2,7 +2,7 @@
 
 import { followUser } from "@/action";
 import { socket } from "@/socket";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import { useOptimistic, useState } from "react";
 
 const FollowButton = ({
@@ -16,14 +16,14 @@ const FollowButton = ({
 }) => {
   const [state, setState] = useState(isFollowed);
 
-  const { user } = useUser();
+  const { user, dbUser } = useAuth();
 
   const [optimisticFollow, switchOptimisticFollow] = useOptimistic(
     state,
     (prev) => !prev
   );
 
-  if (!user) return;
+  if (!user || !dbUser) return null;
 
   const followAction = async () => {
     switchOptimisticFollow("");
@@ -33,9 +33,9 @@ const FollowButton = ({
     socket.emit("sendNotification", {
       receiverUsername: username,
       data: {
-        senderUsername: user.username,
+        senderUsername: dbUser.username,
         type: "follow",
-        link: `/${user.username}`,
+        link: `/${dbUser.username}`,
       },
     });
   };

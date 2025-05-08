@@ -6,7 +6,7 @@ import Image from "../CustomImage";
 import { format } from "timeago.js";
 import { socket } from "@/socket";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 type ConversationParticipant = {
   userId: string;
@@ -37,7 +37,7 @@ const ChatList = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { user } = useUser();
+  const { user, dbUser } = useAuth();
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -104,7 +104,7 @@ const ChatList = () => {
   const getConversationImage = (conversation: Conversation) => {
     if (!conversation.isGroup) {
       const otherParticipant = conversation.participants.find(
-        p => p.userId !== user?.id
+        p => p.userId !== user?.id || p.userId !== dbUser?.id
       );
       
       if (otherParticipant && otherParticipant.user) {

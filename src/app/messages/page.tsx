@@ -1,5 +1,5 @@
 // src/app/messages/page.tsx
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import ChatList from "@/components/Chat/ChatList";
 import FriendsList from "@/components/Chat/FriendsList";
 import { redirect } from "next/navigation";

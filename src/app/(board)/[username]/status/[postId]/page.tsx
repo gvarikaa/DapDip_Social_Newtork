@@ -2,7 +2,7 @@ import Comments from "@/components/Comments";
 import CustomImage from "@/components/CustomImage"; // ეს შევცვალეთ
 import Post from "@/components/Post";
 import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import Image from "./CustomImage";
 import Post from "./Post";
 import { Post as PostType } from "@prisma/client";
@@ -32,7 +32,7 @@ const Comments = ({
   postId: number;
   username: string;
 }) => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { user, dbUser } = useAuth();
 
   const [state, formAction, isPending] = useActionState(addComment, {
     success: false,
@@ -40,17 +40,19 @@ const Comments = ({
   });
 
   useEffect(() => {
-    if (state.success) {
+    if (state.success && dbUser) {
       socket.emit("sendNotification", {
         receiverUsername: username,
         data: {
-          senderUsername: user?.username,
+          senderUsername: dbUser.username,
           type: "comment",
           link: `/${username}/status/${postId}`,
         },
       });
     }
-  }, [state.success, username, user?.username, postId]);
+  }, [state.success, username, dbUser, postId]);
+
+  if (!dbUser) return null;
 
   return (
     <div className="">
@@ -64,15 +66,15 @@ const Comments = ({
         >
           <div className="relative w-10 h-10 rounded-full overflow-hidden -z-10">
             <Image
-  path={comment.user.img}
-  alt={`${comment.user.username}'s avatar`}
-  w={40}
-  h={40}
-  tr={true}
-  isAvatar={true}
-  gender={comment.user.gender}
-  className="rounded-full"
-/>
+              path={dbUser.img || ''}
+              alt={`${dbUser.username}'s avatar`}
+              w={40}
+              h={40}
+              tr={true}
+              isAvatar={true}
+              gender={dbUser.gender || 'other'}
+              className="rounded-full"
+            />
           </div>
           <input type="number" name="postId" hidden readOnly value={postId} />
           <input

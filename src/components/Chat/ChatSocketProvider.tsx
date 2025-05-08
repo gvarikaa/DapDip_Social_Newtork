@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { socket } from "@/socket";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 // სოკეტის კონტექსტის ტიპი
 type ChatSocketContextType = {
@@ -23,7 +23,7 @@ export const ChatSocketProvider = ({
   children: React.ReactNode 
 }) => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const { user } = useUser();
+  const { dbUser } = useAuth();
 
   useEffect(() => {
     // სოკეტის დაკავშირების ფუნქცია
@@ -32,9 +32,9 @@ export const ChatSocketProvider = ({
       setIsConnected(true);
       
       // მომხმარებლის დამატება, თუ ავტორიზებულია
-      if (user) {
-        socket.emit("newUser", user.username);
-        console.log("User registered:", user.username);
+      if (dbUser) {
+        socket.emit("newUser", dbUser.username);
+        console.log("User registered:", dbUser.username);
       }
     };
 
@@ -55,8 +55,8 @@ export const ChatSocketProvider = ({
     socket.on("connect_error", onError);
 
     // თუ სოკეტი უკვე დაკავშირებულია
-    if (socket.connected && user) {
-      socket.emit("newUser", user.username);
+    if (socket.connected && dbUser) {
+      socket.emit("newUser", dbUser.username);
     }
 
     // ალაგება, როცა კომპონენტი გაითიშება
@@ -65,7 +65,7 @@ export const ChatSocketProvider = ({
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onError);
     };
-  }, [user]);
+  }, [dbUser]);
 
   return (
     <ChatSocketContext.Provider value={{ isConnected }}>

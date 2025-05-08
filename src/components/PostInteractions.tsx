@@ -2,7 +2,7 @@
 
 import { likePost, rePost, savePost } from "@/action";
 import { socket } from "@/socket";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import { useOptimistic, useState } from "react";
 
@@ -29,16 +29,16 @@ const PostInteractions = ({
     isSaved,
   });
 
-  const { user } = useUser();
+  const { user, dbUser } = useAuth();
 
   const likeAction = async () => {
-    if (!user) return;
+    if (!user || !dbUser) return;
 
     if (!optimisticCount.isLiked) {
       socket.emit("sendNotification", {
         receiverUsername: username,
         data: {
-          senderUsername: user.username,
+          senderUsername: dbUser.username,
           type: "like",
           link: `/${username}/status/${postId}`,
         },
@@ -57,13 +57,13 @@ const PostInteractions = ({
   };
 
   const rePostAction = async () => {
-    if (!user) return;
+    if (!user || !dbUser) return;
 
     if (!optimisticCount.isRePosted) {
       socket.emit("sendNotification", {
         receiverUsername: username,
         data: {
-          senderUsername: user.username,
+          senderUsername: dbUser.username,
           type: "rePost",
           link: `/${username}/status/${postId}`,
         },

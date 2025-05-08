@@ -2,7 +2,7 @@ import Link from "next/link";
 import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import Socket from "./Socket";
 import Notification from "./Notification";
-import { currentUser } from "@clerk/nextjs/server";
+import { getServerUser } from "@/lib/auth/server";
 import Logout from "./Logout";
 
 const menuList = [
@@ -64,7 +64,7 @@ const menuList = [
 ];
 
 const LeftBar = async () => {
-  const user = await currentUser();
+  const { user, dbUser } = await getServerUser();
 
   return (
     <div className="h-screen sticky top-0 flex flex-col justify-between pt-2 pb-8">
@@ -120,7 +120,7 @@ const LeftBar = async () => {
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 relative rounded-full overflow-hidden">
                 <CustomImage
-                  src={user?.imageUrl}
+                  src={dbUser?.img || "/general/avatar.png"}
                   alt=""
                   w={100}
                   h={100}
@@ -128,8 +128,8 @@ const LeftBar = async () => {
                 />
               </div>
               <div className="hidden xxl:flex flex-col">
-                <span className="font-bold">{user?.username}</span>
-                <span className="text-sm text-textGray">@{user?.username}</span>
+                <span className="font-bold">{dbUser?.name}</span>
+                <span className="text-sm text-textGray">@{dbUser?.username}</span>
               </div>
             </div>
             <Logout/>

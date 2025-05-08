@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "../CustomImage";
 import { socket } from "@/socket";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 type FriendType = {
   id: string;
@@ -22,7 +22,7 @@ const FriendsList = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  const { user } = useUser();
+  const { dbUser } = useAuth();
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -86,7 +86,7 @@ const FriendsList = () => {
     router.push(`/messages/new?recipient=${friendId}`);
   };
 
-  if (loading) {
+  if (loading || !dbUser) {
     return <div className="p-4">იტვირთება...</div>;
   }
 
@@ -135,15 +135,15 @@ const FriendsList = () => {
               <div className="relative">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image
-  path={user.img}
-  alt={`${user.username}'s avatar`}
-  w={50}
-  h={50}
-  tr={true}
-  isAvatar={true}
-  gender={user.gender}
-  className="rounded-full"
-/>
+                  path={dbUser.img || ''}
+                  alt={`${dbUser.username}'s avatar`}
+                  w={50}
+                  h={50}
+                  tr={true}
+                  isAvatar={true}
+                  gender={dbUser.gender || 'other'}
+                  className="rounded-full"
+                />
                 </div>
                 <div 
                   className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${

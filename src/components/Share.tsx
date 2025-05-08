@@ -4,7 +4,7 @@ import React, { useActionState, useEffect, useRef, useState } from "react";
 import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import NextImage from "next/image";
 import ImageEditor from "./ImageEditor";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 import { addPost } from "@/action";
 
 const Share = () => {
@@ -26,7 +26,7 @@ const Share = () => {
 
   const previewURL = media ? URL.createObjectURL(media) : null;
 
-  const { user } = useUser();
+  const { user, dbUser } = useAuth();
 
   const [state, formAction, isPending] = useActionState(addPost, {
     success: false,
@@ -43,6 +43,8 @@ const Share = () => {
     }
   }, [state]);
 
+  if (!user || !dbUser) return null;
+
   return (
     <form
       ref={formRef}
@@ -51,7 +53,7 @@ const Share = () => {
     >
       {/* AVATAR */}
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
-        <CustomImage src={user?.imageUrl} alt="" w={100} h={100} tr={true} />
+        <CustomImage src={dbUser.img || ''} alt="" w={100} h={100} tr={true} />
       </div>
       {/* OTHERS */}
       <div className="flex-1 flex flex-col gap-4">

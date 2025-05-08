@@ -1,7 +1,7 @@
 import Link from "next/link";
 import CustomImage from "./CustomImage"; // ეს შევცვალეთ
 import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 
 const Recommendations = async () => {
   const { userId } = await auth();

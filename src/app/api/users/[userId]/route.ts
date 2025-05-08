@@ -1,6 +1,6 @@
 // src/app/api/users/[userId]/route.ts
 import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(

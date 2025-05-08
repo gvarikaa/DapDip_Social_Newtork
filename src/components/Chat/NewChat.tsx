@@ -3,13 +3,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 const NewChat = () => {
   const [receiverId, setReceiverId] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useAuth();
 
   const startConversation = async (e: React.FormEvent) => {
     e.preventDefault();

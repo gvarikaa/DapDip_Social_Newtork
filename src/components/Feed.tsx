@@ -1,6 +1,6 @@
 import { prisma } from "@/prisma";
 import Post from "./Post";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import InfiniteFeed from "./InfiniteFeed";
 
 const Feed = async ({ userProfileId }: { userProfileId?: string }) => {

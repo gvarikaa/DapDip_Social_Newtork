@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "../CustomImage";
 import { socket } from "@/socket";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/auth";
 
 interface CallInterfaceProps {
   isActive: boolean;
@@ -27,7 +27,7 @@ const CallInterface = ({ isActive, callType, receiver, onEndCall }: CallInterfac
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const { user } = useUser();
+  const { user } = useAuth();
 
   // ეფექტი ზარის დაწყებისას
   useEffect(() => {

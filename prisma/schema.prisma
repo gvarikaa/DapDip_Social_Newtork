@@ -1,129 +1,154 @@
-// prisma/schema.prisma (დამატებული AIComment მოდელი)
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id          String   @id
-  email       String   @unique
-  username    String   @unique
-  displayName String?
-  bio         String?
-  location    String?
-  job         String?
-  website     String?
-  img         String?
-  cover       String?
-  gender      String?  @default("unspecified") // შესაძლო მნიშვნელობები: "male", "female", "unspecified"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // RELATIONS
-  posts Post[]
-
-  likes Like[]
-
-  saves SavedPosts[]
-
-  followers  Follow[] @relation("UserFollowers")
-  followings Follow[] @relation("UserFollowings")
-
-  // მესიჯები და საუბრების მონაწილეები
-  messages                 Message[]
+  id                       String                    @id
+  email                    String                    @unique
+  username                 String                    @unique
+  displayName              String?
+  bio                      String?
+  location                 String?
+  job                      String?
+  website                  String?
+  img                      String?
+  cover                    String?
+  avatarProps              String?
+  gender                   String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  aiCommentRequests        AIComment[]
+  AIConsultations          AIConsultation[]
+  createdARFilters         ARFilter[]
   conversationParticipants ConversationParticipant[]
+  discussionSummaries      DiscussionSummary[]
+  factCheckRequests        FactCheck[]
+  followers                Follow[]                  @relation("UserFollowers")
+  followings               Follow[]                  @relation("UserFollowings")
+  createdGroups            Group[]                   @relation("GroupCreator")
+  groupComments            GroupComment[]
+  groupMemberships         GroupMember[]
+  groupMemberRequests      GroupMemberRequest[]
+  groupPosts               GroupPost[]
+  groupReactions           GroupReaction[]
+  HealthProfile            HealthProfile?
+  likes                    Like[]
+  messages                 Message[]
+  receivedNotifications    Notification[]            @relation("ReceivedNotifications")
+  sentNotifications        Notification[]            @relation("SentNotifications")
+  posts                    Post[]
+  postAnalyses             PostAnalysis[]
+  reels                    Reel[]
+  reelComments             ReelComment[]
+  reelCommentLikes         ReelCommentLike[]
+  reelLikes                ReelLike[]
+  reelSaves                ReelSave[]
+  reelShares               ReelShare[]
+  saves                    SavedPosts[]
+  interests                UserInterest[]
+  savedARFilters           UserSavedARFilter[]
 
-  // AI კომენტარის მოთხოვნები
-  aiCommentRequests AIComment[]
-
-  discussionSummaries DiscussionSummary[]
-
-  postAnalyses PostAnalysis[]
+  // AI მოდულების ახალი რელაციები
+  moderatorResponses    AIModeratorResponse[]
+  groupSummaryRequests  GroupDiscussionSummary[]
+  moderationActions     ModerationLog[]
+  visualizationRequests GroupVisualization[]
+  emotionalAnalyses     EmotionalToneAnalysis[]
+  pollAnalyses          PollAnalysis[]
+  learningPlans         LearningPlan[]
+  learningQuizzes       LearningQuiz[]
+  learningProgress      LearningProgress[]
+  learningMaterials     LearningMaterial[]
+  pollVotes             PollVote[]
+  createdPolls          GroupPoll[]
+  
+  // Livestream relations
+  createdLivestreams    GroupLivestream[]          @relation("LivestreamCreator")
+  livestreamViews       LivestreamView[]
+  livestreamParticipants LivestreamParticipant[]
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  desc        String?  @db.VarChar(255)
-  img         String?
-  imgHeight   Int?
-  video       String?
-  isSensitive Boolean  @default(false)
-
-  // RELATIONS
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  rePostId Int?
-  rePost   Post?  @relation("RePosts", fields: [rePostId], references: [id])
-  rePosts  Post[] @relation("RePosts")
-
-  parentPostId Int?
-  parentPost   Post?  @relation("PostComments", fields: [parentPostId], references: [id])
-  comments     Post[] @relation("PostComments")
-
-  likes Like[]
-
-  saves SavedPosts[]
-
-  // AI კომენტარები ამ პოსტზე
-  aiComments AIComment[]
-
+  id                  Int                 @id @default(autoincrement())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  desc                String?             @db.VarChar(2200)
+  img                 String?
+  imgHeight           Int?
+  video               String?
+  isSensitive         Boolean             @default(false)
+  userId              String
+  rePostId            Int?
+  parentPostId        Int?
+  aiComments          AIComment[]
   discussionSummaries DiscussionSummary[]
+  likes               Like[]
+  media               Media[]
+  parentPost          Post?               @relation("PostComments", fields: [parentPostId], references: [id])
+  comments            Post[]              @relation("PostComments")
+  rePost              Post?               @relation("RePosts", fields: [rePostId], references: [id])
+  rePosts             Post[]              @relation("RePosts")
+  user                User                @relation(fields: [userId], references: [id])
+  analyses            PostAnalysis[]
+  hashtags            PostHashtag[]
+  saves               SavedPosts[]
+}
 
-  analyses PostAnalysis[]
+model Media {
+  id           String   @id @default(uuid())
+  type         String
+  url          String
+  thumbnailUrl String?
+  width        Int?
+  height       Int?
+  caption      String?
+  isSensitive  Boolean  @default(false)
+  displayType  String   @default("original")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  postId       Int?
+  post         Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Like {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-
-  // RELATIONS
-  userId String
-  postId Int
-
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  userId    String
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model SavedPosts {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-
-  // RELATIONS
-  userId String
-  postId Int
-
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  userId    String
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Follow {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-
-  // RELATIONS
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
   followerId  String
   followingId String
-
-  follower  User @relation("UserFollowers", fields: [followerId], references: [id])
-  following User @relation("UserFollowings", fields: [followingId], references: [id])
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id])
+  following   User     @relation("UserFollowings", fields: [followingId], references: [id])
 }
 
 model Conversation {
-  id           String   @id @default(uuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  isGroup      Boolean  @default(false)
+  id           String                    @id @default(uuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  isGroup      Boolean                   @default(false)
   name         String?
   groupAdminId String?
-
-  // რელაციები
   participants ConversationParticipant[]
   messages     Message[]
 }
@@ -131,76 +156,890 @@ model Conversation {
 model ConversationParticipant {
   userId         String
   conversationId String
-  joinedAt       DateTime  @default(now())
+  joinedAt       DateTime     @default(now())
   lastReadAt     DateTime?
-
-  // რელაციები
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, conversationId])
 }
 
 model Message {
-  id             Int       @id @default(autoincrement())
-  content        String    @db.Text
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id             Int          @id @default(autoincrement())
+  content        String       @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   senderId       String
   conversationId String
-  isRead         Boolean   @default(false)
+  isRead         Boolean      @default(false)
   readAt         DateTime?
-  isEdited       Boolean   @default(false)
+  isEdited       Boolean      @default(false)
   attachmentUrl  String?
   attachmentType String?
   replyToId      Int?
-
-  // რელაციები
-  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  metadata       String?      @db.Text
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
-// AI კომენტარების მოდელი
 model AIComment {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-
-  // რელაციები
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
-
-  // მომხმარებელი, რომელმაც მოითხოვა AI-ის კომენტარი
-  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
+  postId        Int
   requestedById String
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  requestedBy   User     @relation(fields: [requestedById], references: [id], onDelete: Cascade)
 }
 
-// AI კომენტარების შეჯამებების მოდელი
 model DiscussionSummary {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-
-  // რელაციები
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
-
-  // მომხმარებელი, რომელმაც მოითხოვა შეჯამება
-  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
+  postId        Int
   requestedById String
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  requestedBy   User     @relation(fields: [requestedById], references: [id], onDelete: Cascade)
 }
 
-// პოსტის ანალიზის მოდელი
 model PostAnalysis {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-
-  // რელაციები
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId Int
-
-  // მომხმარებელი, რომელმაც მოითხოვა ანალიზი
-  requestedBy   User   @relation(fields: [requestedById], references: [id])
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  createdAt     DateTime @default(now())
+  postId        Int
   requestedById String
+  post          Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  requestedBy   User     @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+}
+
+model Hashtag {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  posts     PostHashtag[]
+  reels     ReelHashtag[]
+}
+
+model PostHashtag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  postId    Int
+  hashtagId Int
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, hashtagId])
+}
+
+model HealthProfile {
+  id                 Int            @id @default(autoincrement())
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  userId             String         @unique
+  gender             String?
+  age                Int?
+  height             Float?
+  weight             Float?
+  targetWeight       Float?
+  goal               String?
+  timeline           String?
+  foodRestrictions   String?
+  dislikedFoods      String?
+  symptoms           String?
+  activityLevel      String?
+  exercisePreference String?
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress           ProgressLog[]
+  plans              WellnessPlan[]
+}
+
+model WellnessPlan {
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  profileId     Int
+  title         String
+  description   String?
+  duration      String
+  startDate     DateTime
+  endDate       DateTime
+  content       String
+  exercisePlans ExercisePlan[]
+  mealPlans     MealPlan[]
+  progress      ProgressLog[]
+  profile       HealthProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model MealPlan {
+  id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  planId        Int
+  date          DateTime
+  meals         String
+  calories      Int?
+  macros        String?
+  groceryList   String?
+  estimatedCost Float?
+  logs          MealLog[]
+  plan          WellnessPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  recipes       Recipe[]
+}
+
+model ExercisePlan {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  planId    Int
+  date      DateTime
+  exercises String
+  duration  Int?
+  intensity String?
+  logs      ExerciseLog[]
+  plan      WellnessPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
+model Recipe {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  mealPlanId   Int
+  name         String
+  description  String?
+  ingredients  String
+  instructions String
+  prepTime     Int?
+  calories     Int?
+  macros       String?
+  imageUrl     String?
+  mealPlan     MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+}
+
+model ProgressLog {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  profileId Int
+  planId    Int?
+  date      DateTime
+  weight    Float?
+  mood      String?
+  energy    Int?
+  sleep     Int?
+  notes     String?
+  aiMessage String?
+  plan      WellnessPlan? @relation(fields: [planId], references: [id])
+  profile   HealthProfile @relation(fields: [profileId], references: [id])
+}
+
+model MealLog {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  mealPlanId Int
+  date       DateTime
+  mealType   String
+  foods      String
+  completed  Boolean  @default(false)
+  calories   Int?
+  notes      String?
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+}
+
+model ExerciseLog {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  exercisePlanId Int
+  date           DateTime
+  completed      Boolean      @default(false)
+  duration       Int?
+  feedback       String?
+  exercisePlan   ExercisePlan @relation(fields: [exercisePlanId], references: [id], onDelete: Cascade)
+}
+
+model AIConsultation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  question  String
+  answer    String?
+  topic     String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  type       String
+  link       String
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  receiverId String
+  senderId   String?
+  metadata   String?
+  receiver   User      @relation("ReceivedNotifications", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User?     @relation("SentNotifications", fields: [senderId], references: [id], onDelete: SetNull)
+}
+
+model Reel {
+  id            String         @id @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  title         String?        @db.VarChar(100)
+  desc          String?        @db.VarChar(500)
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int
+  width         Int
+  height        Int
+  views         Int            @default(0)
+  isSensitive   Boolean        @default(false)
+  isFeatured    Boolean        @default(false)
+  allowComments Boolean        @default(true)
+  isPublished   Boolean        @default(true)
+  userId        String
+  categoryId    Int?
+  category      ReelCategory?  @relation(fields: [categoryId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analytics     ReelAnalytics?
+  comments      ReelComment[]
+  hashtags      ReelHashtag[]
+  likes         ReelLike[]
+  saves         ReelSave[]
+  shares        ReelShare[]
+  topics        ReelTopic[]    @relation("ReelToReelTopic")
+}
+
+model ReelCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  iconUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reels       Reel[]
+}
+
+model ReelHashtag {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  reelId    String
+  hashtagId Int
+  hashtag   Hashtag  @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, hashtagId])
+}
+
+model ReelLike {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  reelId    String
+  userId    String
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, userId])
+}
+
+model ReelComment {
+  id        String            @id @default(uuid())
+  content   String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  reelId    String
+  userId    String
+  parentId  String?
+  parent    ReelComment?      @relation("ReelCommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   ReelComment[]     @relation("ReelCommentReplies")
+  reel      Reel              @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     ReelCommentLike[]
+}
+
+model ReelCommentLike {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  commentId String
+  userId    String
+  comment   ReelComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+}
+
+model ReelSave {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  reelId    String
+  userId    String
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, userId])
+}
+
+model ReelShare {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  platform  String?
+  reelId    String
+  userId    String
+  reel      Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReelTopic {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userInterests UserInterest[]
+  reels         Reel[]         @relation("ReelToReelTopic")
+}
+
+model ReelAnalytics {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  viewsCount      Int      @default(0)
+  uniqueViewers   Int      @default(0)
+  avgWatchTime    Float    @default(0)
+  completionRate  Float    @default(0)
+  engagement      Float    @default(0)
+  reelId          String   @unique
+  viewsData       String?
+  demographicData String?
+  reel            Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+}
+
+model UserInterest {
+  id        Int       @id @default(autoincrement())
+  score     Float     @default(1.0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
+  topicId   Int
+  topic     ReelTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model ARFilter {
+  id          String              @id @default(uuid())
+  name        String
+  description String?
+  type        String
+  thumbnail   String?
+  config      Json
+  assetUrl    String?
+  isPublic    Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdById String
+  usageCount  Int                 @default(0)
+  likes       Int                 @default(0)
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  savedBy     UserSavedARFilter[]
+}
+
+model UserSavedARFilter {
+  id        String   @id @default(uuid())
+  userId    String
+  filterId  String
+  createdAt DateTime @default(now())
+  filter    ARFilter @relation(fields: [filterId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, filterId])
+}
+
+model Group {
+  id             String               @id @default(uuid())
+  name           String
+  description    String?              @db.Text
+  coverImage     String?
+  isPrivate      Boolean              @default(false)
+  type           String
+  icon           String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  moderationMode String               @default("auto")
+  creatorId      String
+  creator        User                 @relation("GroupCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members        GroupMember[]
+  memberRequests GroupMemberRequest[]
+  posts          GroupPost[]
+  categories     OpinionCategory[]
+
+  // AI მოდულების ახალი რელაციები
+  moderatorResponses  AIModeratorResponse[]
+  discussionSummaries GroupDiscussionSummary[]
+  moderationLogs      ModerationLog[]
+  groupVisualizations GroupVisualization[]
+  learningPlans       LearningPlan[]
+  learningQuizzes     LearningQuiz[]
+  learningProgress    LearningProgress[]
+  learningMaterials   LearningMaterial[]
+  polls               GroupPoll[]
+  livestreams         GroupLivestream[]
+}
+
+model GroupMember {
+  id               String   @id @default(uuid())
+  role             String   @default("member")
+  joinedAt         DateTime @default(now())
+  isActive         Boolean  @default(true)
+  dominantCategory String?
+  categoryData     Json?
+  userId           String
+  groupId          String
+  group            Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model GroupMemberRequest {
+  id          String    @id @default(uuid())
+  status      String    @default("pending")
+  requestedAt DateTime  @default(now())
+  reviewedAt  DateTime?
+  message     String?
+  userId      String
+  groupId     String
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model OpinionCategory {
+  id          String            @id @default(uuid())
+  name        String
+  description String?           @db.Text
+  color       String
+  priority    Int               @default(0)
+  criteria    String?           @db.Text
+  groupId     String
+  opinions    OpinionAnalysis[]
+  group       Group             @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, name])
+}
+
+model GroupPost {
+  id            String           @id @default(uuid())
+  content       String           @db.Text
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  isPending     Boolean          @default(false)
+  isModerated   Boolean          @default(false)
+  allowComments Boolean          @default(true)
+  isSensitive   Boolean          @default(false)
+  authorId      String
+  groupId       String
+  comments      GroupComment[]
+  media         GroupMedia[]
+  author        User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group         Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  reactions     GroupReaction[]
+  analysis      OpinionAnalysis?
+
+  @@index([groupId, createdAt])
+}
+
+model GroupComment {
+  id        String           @id @default(uuid())
+  content   String           @db.Text
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  audioUrl  String?
+  authorId  String
+  postId    String
+  parentId  String?
+  author    User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    GroupComment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies   GroupComment[]   @relation("CommentReplies")
+  post      GroupPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reactions GroupReaction[]
+  analysis  OpinionAnalysis?
+
+  @@index([postId, createdAt])
+}
+
+model GroupReaction {
+  id        String        @id @default(uuid())
+  type      String
+  createdAt DateTime      @default(now())
+  userId    String
+  postId    String?
+  commentId String?
+  comment   GroupComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post      GroupPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId, commentId, type], name: "reaction_unique_constraint")
+}
+
+model OpinionAnalysis {
+  id           String           @id @default(uuid())
+  analysisDate DateTime         @default(now())
+  result       Json
+  truthScore   Int?
+  keyInsights  String?
+  categoryId   String?
+  postId       String?          @unique
+  commentId    String?          @unique
+  factChecks   FactCheck[]
+  category     OpinionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  comment      GroupComment?    @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post         GroupPost?       @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model FactCheck {
+  id          String          @id @default(uuid())
+  requestedAt DateTime        @default(now())
+  completedAt DateTime?
+  statement   String
+  result      String?
+  sources     Json?
+  score       Int?
+  requesterId String
+  analysisId  String
+  analysis    OpinionAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  requester   User            @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+}
+
+model GroupMedia {
+  id           String    @id @default(uuid())
+  type         String
+  url          String
+  thumbnailUrl String?
+  width        Int?
+  height       Int?
+  caption      String?
+  createdAt    DateTime  @default(now())
+  postId       String
+  post         GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// AI მოდერატორის პასუხები ჯგუფებისთვის
+model AIModeratorResponse {
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  groupId       String
+  requestedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([requestedById])
+}
+
+// ჯგუფის დისკუსიის შეჯამებები
+model GroupDiscussionSummary {
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  groupId       String
+  requestedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([requestedById])
+}
+
+// ჯგუფის შინაარსის მოდერაციის ლოგები
+model ModerationLog {
+  id            Int      @id @default(autoincrement())
+  content       String   @db.Text
+  result        String   @db.Text
+  isSafe        Boolean
+  confidence    Float
+  groupId       String
+  moderatedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  group       Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  moderatedBy User  @relation(fields: [moderatedById], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([moderatedById])
+}
+
+// ჯგუფის დისკუსიის ვიზუალიზაციები
+model GroupVisualization {
+  id          Int      @id @default(autoincrement())
+  data        String   @db.Text
+  groupId     String
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([createdById])
+}
+
+// ემოციური ტონის ანალიზი
+model EmotionalToneAnalysis {
+  id             Int      @id @default(autoincrement())
+  contentId      String
+  contentType    String // post, comment, discussion
+  primaryEmotion String
+  intensity      Float
+  sentiment      String
+  analysis       Json
+  requestedById  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  requestedBy User @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@index([contentId, contentType])
+  @@index([requestedById])
+}
+
+// გამოკითხვების (polls) ანალიზი
+model PollAnalysis {
+  id           Int      @id @default(autoincrement())
+  pollId       String
+  analysisType String // basic, detailed, trends, demographics
+  analysis     Json
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // ფიქსირებული რელაცია
+  poll      GroupPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  createdBy User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([pollId])
+  @@index([createdById])
+}
+
+// GroupPoll მოდელი
+model GroupPoll {
+  id          String         @id @default(uuid())
+  question    String
+  options     Json
+  isMultiple  Boolean        @default(false)
+  isAnonymous Boolean        @default(false)
+  endDate     DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdById String
+  groupId     String
+
+  analyses  PollAnalysis[]
+  createdBy User           @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  votes     PollVote[]
+
+  @@index([groupId])
+  @@index([createdById])
+}
+
+// PollVote მოდელი
+model PollVote {
+  id        String   @id @default(uuid())
+  optionId  String
+  createdAt DateTime @default(now())
+  userId    String
+  pollId    String
+
+  poll GroupPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pollId, optionId])
+  @@index([pollId])
+  @@index([userId])
+}
+
+// სასწავლო გეგმები
+model LearningPlan {
+  id            Int      @id @default(autoincrement())
+  topic         String
+  userLevel     String // beginner, intermediate, advanced
+  learningStyle String? // visual, auditory, reading, kinesthetic
+  timeAvailable Int? // დღეში წუთები
+  goals         String?  @db.Text
+  plan          Json
+  userId        String
+  groupId       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([topic])
+}
+
+// სასწავლო ქვიზები
+model LearningQuiz {
+  id             Int      @id @default(autoincrement())
+  topic          String
+  difficulty     String // easy, medium, hard
+  questionsCount Int      @default(5)
+  quiz           Json
+  userId         String
+  groupId        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([topic])
+}
+
+// სასწავლო პროგრესი
+model LearningProgress {
+  id          Int      @id @default(autoincrement())
+  topic       String
+  quizResults Json
+  analysis    Json
+  userId      String
+  groupId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([topic])
+}
+
+// სასწავლო მასალები
+model LearningMaterial {
+  id           Int      @id @default(autoincrement())
+  topic        String
+  materialType String // summary, explanation, examples, cheatsheet, concept_map
+  skillLevel   String // beginner, intermediate, advanced
+  format       String // text, markdown, structured
+  content      String   @db.Text
+  userId       String
+  groupId      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([groupId])
+  @@index([topic])
+}
+
+// ჯგუფის ლაივსტრიმები
+model GroupLivestream {
+  id                 String                  @id @default(uuid())
+  title              String
+  description        String?                 @db.Text
+  thumbnailUrl       String?
+  streamKey          String?                 @unique
+  streamUrl          String?
+  status             String                  @default("scheduled") // scheduled, live, completed, cancelled
+  visibility         String                  @default("public") // public, members_only, private
+  scheduledStartTime DateTime?
+  actualStartTime    DateTime?
+  endTime            DateTime?
+  duration           Int?                    // დროის ხანგრძლივობა წუთებში
+  recordingUrl       String?
+  maxParticipants    Int?
+  settings           Json?                   // დამატებითი პარამეტრები (ჩატი, კომენტარები, რეაქციები)
+  createdById        String
+  groupId            String
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  createdBy    User                     @relation("LivestreamCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  group        Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  participants LivestreamParticipant[]
+  views        LivestreamView[]
+  chats        LivestreamChat[]
+
+  @@index([groupId])
+  @@index([createdById])
+  @@index([status])
+  @@index([scheduledStartTime])
+}
+
+// ლაივსტრიმის მონაწილეები
+model LivestreamParticipant {
+  id           String          @id @default(uuid())
+  role         String          @default("viewer") // host, co-host, viewer
+  joinedAt     DateTime        @default(now())
+  leftAt       DateTime?
+  isActive     Boolean         @default(true)
+  userId       String
+  livestreamId String
+  
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  livestream GroupLivestream @relation(fields: [livestreamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, livestreamId])
+  @@index([livestreamId, isActive])
+}
+
+// ლაივსტრიმის დათვალიერებები
+model LivestreamView {
+  id           String          @id @default(uuid())
+  startTime    DateTime        @default(now())
+  endTime      DateTime?
+  duration     Int?            // წამებში
+  deviceType   String?         // mobile, desktop, tablet
+  country      String?
+  region       String?
+  userId       String?
+  livestreamId String
+  
+  user       User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  livestream GroupLivestream  @relation(fields: [livestreamId], references: [id], onDelete: Cascade)
+
+  @@index([livestreamId])
+  @@index([userId])
+}
+
+// ლაივსტრიმის ჩატი
+model LivestreamChat {
+  id           String          @id @default(uuid())
+  message      String          @db.Text
+  type         String          @default("text") // text, reaction, question, announcement
+  isHighlighted Boolean        @default(false)
+  isDeleted    Boolean         @default(false)
+  parentId     String?
+  createdAt    DateTime        @default(now())
+  senderId     String?
+  livestreamId String
+  
+  parent     LivestreamChat?  @relation("ChatReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies    LivestreamChat[] @relation("ChatReplies")
+  livestream GroupLivestream  @relation(fields: [livestreamId], references: [id], onDelete: Cascade)
+
+  @@index([livestreamId])
+  @@index([senderId])
+  @@index([parentId])
 }

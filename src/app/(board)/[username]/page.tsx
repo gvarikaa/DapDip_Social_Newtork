@@ -2,7 +2,7 @@ import Feed from "@/components/Feed";
 import FollowButton from "@/components/FollowButton";
 import CustomImage from "@/components/CustomImage"; // ეს შევცვალეთ
 import { prisma } from "@/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/utils/supabase/auth";
 import { redirect } from "next/navigation";
 import ChatBox from "@/components/Chat/ChatBox";
 import FriendsList from "@/components/Chat/FriendsList";

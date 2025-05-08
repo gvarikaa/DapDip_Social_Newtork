@@ -1,9 +1,9 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import QueryProvider from "@/providers/QueryProvider";
 import { ChatSocketProvider } from "@/components/Chat/ChatSocketProvider";
+import { AuthProvider } from "@/lib/auth/context";
 
 export const metadata: Metadata = {
   title: "Lama Dev X Clone",
@@ -16,7 +16,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <AuthProvider>
       <QueryProvider>
         <html lang="en">
           <body>
@@ -26,6 +26,6 @@ export default function AppLayout({
           </body>
         </html>
       </QueryProvider>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }
