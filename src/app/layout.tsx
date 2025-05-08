@@ -4,10 +4,11 @@ import type { Metadata } from "next";
 import QueryProvider from "@/providers/QueryProvider";
 import { ChatSocketProvider } from "@/components/Chat/ChatSocketProvider";
 import { AuthProvider } from "@/lib/auth/context";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Lama Dev X Clone",
-  description: "Next.js social media application project",
+  title: "DapDip - სოციალური პლატფორმა",
+  description: "ქართული სოციალური მედიის პლატფორმა",
 };
 
 export default function AppLayout({
@@ -18,10 +19,13 @@ export default function AppLayout({
   return (
     <AuthProvider>
       <QueryProvider>
-        <html lang="en">
-          <body>
+        <html lang="ka">
+          <body className="bg-background text-white">
             <ChatSocketProvider>
-              {children}
+              <Header />
+              <div className="mt-16">
+                {children}
+              </div>
             </ChatSocketProvider>
           </body>
         </html>
